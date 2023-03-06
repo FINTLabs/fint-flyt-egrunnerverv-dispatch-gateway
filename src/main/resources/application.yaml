@@ -4,3 +4,13 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://idp.felleskomponent.no/nidp/oauth/nam
+  profiles:
+    include:
+      - flyt-kafka
+fint:
+  application-id: fint-flyt-egrunnerverv-dispatch-gateway
+  flyt:
+    egrunnerverv:
+      dispatch-url-template: https://vigoikstest.service-now.com/api/now/table/%s/%s
+      access-token-url: https://vigoikstest.service-now.com/oauth_token.do
+      retentionTimeInDays: 30
