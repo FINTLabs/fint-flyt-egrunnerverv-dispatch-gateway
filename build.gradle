@@ -45,6 +45,8 @@ dependencies {
     implementation 'no.fintlabs:fint-flyt-kafka:2.2.0'
     implementation 'org.jetbrains:annotations:23.0.0'
 
+    implementation 'org.springframework.security:spring-security-oauth2-core:6.0.2'
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
