@@ -1,4 +1,4 @@
-import no.fintlabs.SimpleCaseInstance
+import no.fintlabs.model.SimpleCaseInstance
 import no.fintlabs.SimpleCaseInstanceRepository
 import spock.lang.Ignore
 import spock.lang.Specification

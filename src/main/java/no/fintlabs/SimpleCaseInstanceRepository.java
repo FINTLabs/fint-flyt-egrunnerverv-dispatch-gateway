@@ -1,5 +1,6 @@
 package no.fintlabs;
 
+import no.fintlabs.model.SimpleCaseInstance;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -8,9 +9,9 @@ import java.util.Optional;
 
 @Repository
 public class SimpleCaseInstanceRepository {
-    private Map<String, SimpleCaseInstance> instances = new HashMap<>();
+    private final Map<String, SimpleCaseInstance> instances = new HashMap<>();
 
-    public void put(SimpleCaseInstance simpleCaseInstance){
+    public void put(SimpleCaseInstance simpleCaseInstance) {
         instances.put(simpleCaseInstance.getSysId(), simpleCaseInstance);
     }
 
