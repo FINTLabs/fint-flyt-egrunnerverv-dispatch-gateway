@@ -1,18 +1,14 @@
 fint:
   org-id: fintlabs.no
-  flyt:
-    resource-server:
-      security:
-        api:
-          internal:
-            enabled: true
-            authorized-org-ids: 'viken.no, vigo.no'
-
   kafka:
     default-replicas: 1
 spring:
   kafka:
     bootstrap-servers: localhost:9092
+  datasource:
+    url: jdbc:postgresql://localhost:5439/fint-flyt-egrunnerverv-dispatch-gateway
+    username: postgres
+    password: password
 
 logging:
   level:

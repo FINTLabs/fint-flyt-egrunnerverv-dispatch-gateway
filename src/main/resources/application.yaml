@@ -17,6 +17,7 @@ spring:
   profiles:
     include:
       - flyt-kafka
+      - flyt-postgres
 
 fint:
   application-id: fint-flyt-egrunnerverv-dispatch-gateway
@@ -27,6 +28,7 @@ fint:
       password:
       registrationId: egrunnerverv
       base-url: https://vigoikstest.service-now.comm/api/now/table
+      instance-dispatch-interval-cron: 0 0 0 * * *
 management:
   endpoints:
     web:

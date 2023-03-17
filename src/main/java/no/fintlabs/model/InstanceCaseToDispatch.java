@@ -2,14 +2,15 @@ package no.fintlabs.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.jackson.Jacksonized;
 
-import java.time.LocalDateTime;
-
-@Data
+@Getter
+@Setter
 @Builder
-public class InstanceDispatched {
-
+@Jacksonized
+public class InstanceCaseToDispatch {
     @JsonProperty("arkivnummer")
     public String archiveInstanceId;
     @JsonProperty("u_elements")
