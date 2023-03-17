@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fint-flyt-egrunnerverv-dispatch-gateway
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    spec:
+      restartPolicy: Always
+      volumes:
+        - name: credentials
+          secret:
+            secretName: fint-flyt-egrunnerverv-dispatch-gateway-kafka-certificates
+      containers:
+        - image: ghcr.io/fintlabs/fint-flyt-egrunnerverv-dispatch-gateway:sha-0000000
+          name: fint-flyt-egrunnerverv-dispatch-gateway
+          volumeMounts:
+            - name: credentials
+              mountPath: /credentials
+          resources:
+            limits:
+              memory: "2048Mi"
+              cpu: "1"
+            requests:
+              memory: "512Mi"
+              cpu: "100m"
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: fint-flyt-egrunnerverv-dispatch-gateway-kafka
+            - secretRef:
+                name: fint-flyt-egrunnerverv-dispatch-gateway
+            - configMapRef:
+                name: fint-flyt-egrunnerverv-dispatch-gateway

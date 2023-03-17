@@ -27,8 +27,8 @@ fint:
       username:
       password:
       registrationId: egrunnerverv
-      base-url: https://vigoikstest.service-now.comm/api/now/table
-      instance-dispatch-interval-cron: 0 0 0 * * *
+      base-url: https://vigoikstest.service-now.com/api/now/table
+      instance-dispatch-interval-cron: "0 0/30 * * * *"
 management:
   endpoints:
     web:

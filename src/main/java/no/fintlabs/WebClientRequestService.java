@@ -7,6 +7,8 @@ import no.fintlabs.model.InstanceToDispatchEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
@@ -23,13 +25,12 @@ public class WebClientRequestService {
     }
 
     @Scheduled(cron = "${fint.flyt.egrunnerverv.instance-dispatch-interval-cron}")
-    public void dispatchInstances() {
-
+    private void dispatchInstances() {
         instanceToDispatchEntityRepository.findAll()
                 .forEach(this::dispatchInstance);
     }
 
-    public boolean dispatchInstance(InstanceToDispatchEntity instanceToDispatchEntity) {
+    public void dispatchInstance(InstanceToDispatchEntity instanceToDispatchEntity) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             Object instanceToDispatch;
@@ -37,30 +38,26 @@ public class WebClientRequestService {
 
             webClient.patch()
                     .uri(instanceToDispatchEntity.getUri())
-                    .body(instanceToDispatch, instanceToDispatchEntity.getClassType())
+                    .body(Mono.just(instanceToDispatch), instanceToDispatchEntity.getClassType())
                     .retrieve()
                     .bodyToMono(String.class)
-                    .doOnSuccess(success -> log.info("success {}", success))
-                    .doOnError(error -> {
-                        log.info("Error msg from webclient: " + error.getMessage());
+                    .publishOn(Schedulers.boundedElastic())
+                    .doOnSuccess(success -> {
+                        log.info("success {}", success);
+                        instanceToDispatchEntityRepository.delete(instanceToDispatchEntity);
                     })
+                    .doOnError(error -> log.error("Error msg from webclient: " + error.getMessage()))
                     .retryWhen(
                             Retry.backoff(5, Duration.ofSeconds(1))
                                     .jitter(0.9)
-                                    .doAfterRetry(retrySignal -> {
-                                        log.debug("Retrying after " + retrySignal.failure().getMessage());
-                                    })
+                                    .doAfterRetry(retrySignal -> log.debug("Retrying after " + retrySignal.failure().getMessage()))
                     )
                     .block();
 
         } catch (JsonProcessingException e) {
-//            throw new RuntimeException(e);
-
-
-            return false;
+            throw new RuntimeException(e);
         }
 
-        return true;
     }
 
 

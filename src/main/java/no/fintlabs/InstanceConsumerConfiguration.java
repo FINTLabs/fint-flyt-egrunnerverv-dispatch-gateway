@@ -3,7 +3,6 @@ package no.fintlabs;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import no.fintlabs.flyt.kafka.InstanceFlowConsumerRecord;
 import no.fintlabs.flyt.kafka.event.InstanceFlowEventConsumerFactoryService;
 import no.fintlabs.kafka.event.EventConsumerFactoryService;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
@@ -32,12 +31,19 @@ public class InstanceConsumerConfiguration {
     private Long retentionTimeInDays;
 
     private final SimpleCaseInstanceRepository simpleCaseInstanceRepository;
+    private final InstanceToDispatchEntityRepository instanceToDispatchEntityRepository;
     private final EventTopicService eventTopicService;
 
     private final WebClientRequestService webClientRequestService;
 
-    public InstanceConsumerConfiguration(SimpleCaseInstanceRepository simpleCaseInstanceRepository, EventTopicService eventTopicService, WebClientRequestService webClientRequestService) {
+    public InstanceConsumerConfiguration(
+            SimpleCaseInstanceRepository simpleCaseInstanceRepository,
+            InstanceToDispatchEntityRepository instanceToDispatchEntityRepository,
+            EventTopicService eventTopicService,
+            WebClientRequestService webClientRequestService
+    ) {
         this.simpleCaseInstanceRepository = simpleCaseInstanceRepository;
+        this.instanceToDispatchEntityRepository = instanceToDispatchEntityRepository;
         this.eventTopicService = eventTopicService;
         this.webClientRequestService = webClientRequestService;
     }
@@ -60,26 +66,34 @@ public class InstanceConsumerConfiguration {
 
     @Bean
     public ConcurrentMessageListenerContainer<String, InstanceToDispatchEntity> instanceToDispatchEventConsumer(
-            InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService,
-            InstanceToDispatchEntityRepository instanceToDispatchEntityRepository
+            InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService
     ) {
         EventTopicNameParameters topic = EventTopicNameParameters.builder()
                 .eventName("instance-dispatched")
                 .build();
 
-        eventTopicService.ensureTopic(topic, Duration.ofDays(retentionTimeInDays).toMillis());
+        eventTopicService.ensureTopic(topic, 0);
 
         return instanceFlowEventConsumerFactoryService.createFactory(
                 InstanceToDispatchEntity.class,
                 instanceFlowConsumerRecord -> {
-                    if (instanceFlowConsumerRecord.getInstanceFlowHeaders().getSourceApplicationId() == EGRUNNERVERV_ID) {
+                    Long sourceApplicationId = instanceFlowConsumerRecord.getInstanceFlowHeaders().getSourceApplicationId();
 
-//                        webClientRequestService.dispatchInstance()
-
-                        try {
-                            storeInstanceToDispatch(simpleCaseInstanceRepository, instanceToDispatchEntityRepository, instanceFlowConsumerRecord);
-                        } catch (JsonProcessingException e) {
-                            throw new RuntimeException(e);
+                    if (sourceApplicationId == EGRUNNERVERV_ID) {
+                        String sourceApplicationInstanceId = instanceFlowConsumerRecord.getInstanceFlowHeaders().getSourceApplicationInstanceId();
+                        Optional<SimpleCaseInstance> simpleCaseInstance = simpleCaseInstanceRepository.get(sourceApplicationInstanceId);
+                        if (simpleCaseInstance.isPresent()) {
+                            try {
+                                Optional<InstanceToDispatchEntity> instanceToDispatchEntity =
+                                        storeInstanceToDispatch(
+                                                simpleCaseInstance.get().getTableName(),
+                                                sourceApplicationInstanceId,
+                                                instanceFlowConsumerRecord.getInstanceFlowHeaders().getArchiveInstanceId()
+                                        );
+                                instanceToDispatchEntity.ifPresent(webClientRequestService::dispatchInstance);
+                            } catch (JsonProcessingException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     }
                 },
@@ -89,35 +103,36 @@ public class InstanceConsumerConfiguration {
     }
 
 
-    private void storeInstanceToDispatch(SimpleCaseInstanceRepository simpleCaseInstanceRepository, InstanceToDispatchEntityRepository instanceToDispatchEntityRepository, InstanceFlowConsumerRecord<InstanceToDispatchEntity> instanceFlowConsumerRecord) throws JsonProcessingException {
-        String sourceApplicationInstanceId = instanceFlowConsumerRecord.getInstanceFlowHeaders().getSourceApplicationInstanceId();
+    private Optional<InstanceToDispatchEntity> storeInstanceToDispatch(
+            String tableName,
+            String sourceApplicationInstanceId,
+            String archiveInstanceId
+    ) throws JsonProcessingException
+    {
+        InstanceCaseToDispatch instanceCaseToDispatch = InstanceCaseToDispatch.builder()
+                .archiveInstanceId(archiveInstanceId)
+                .archivedTimestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern(EGRUNNERVERV_DATETIME_FORMAT)))
+                .build();
 
-        Optional<SimpleCaseInstance> simpleCaseInstance = simpleCaseInstanceRepository.get(sourceApplicationInstanceId);
-        if (simpleCaseInstance.isPresent()) {
-            InstanceCaseToDispatch instanceCaseToDispatch = InstanceCaseToDispatch.builder()
-                    .archiveInstanceId(instanceFlowConsumerRecord.getInstanceFlowHeaders().getArchiveInstanceId())
-                    .archivedTimestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern(EGRUNNERVERV_DATETIME_FORMAT)))
-                    .build();
+        String uri = UriComponentsBuilder.newInstance()
+                .pathSegment(
+                        tableName,
+                        sourceApplicationInstanceId
+                )
+                .queryParam("sysparm_fields", "u_elements,arkivnummer,u_opprettelse_i_elements_fullfort")
+                .queryParam("sysparm_query_no_domain", "true").toUriString();
 
-            String uri = UriComponentsBuilder.newInstance()
-                    .pathSegment(
-                            simpleCaseInstance.get().getTableName(),
-                            sourceApplicationInstanceId
-                    )
-                    .queryParam("sysparm_fields", "u_elements,arkivnummer,u_opprettelse_i_elements_fullfort")
-                    .queryParam("sysparm_query_no_domain", "true").toUriString();
+        ObjectMapper objectMapper = new ObjectMapper();
 
-            ObjectMapper objectMapper = new ObjectMapper();
+        InstanceToDispatchEntity instanceToDispatchEntity = InstanceToDispatchEntity.builder()
+                .sourceApplicationInstanceId(sourceApplicationInstanceId)
+                .instanceToDispatch(objectMapper.writeValueAsString(instanceCaseToDispatch))
+                .classType(InstanceCaseToDispatch.class)
+                .uri(uri)
+                .build();
 
-            InstanceToDispatchEntity instanceToDispatchEntity = InstanceToDispatchEntity.builder()
-                    .sourceApplicationInstanceId(sourceApplicationInstanceId)
-                    .instanceToDispatch(objectMapper.writeValueAsString(instanceCaseToDispatch))
-                    .classType(InstanceCaseToDispatch.class)
-                    .uri(uri)
-                    .build();
-
-            instanceToDispatchEntityRepository.save(instanceToDispatchEntity);
-        }
+        instanceToDispatchEntityRepository.save(instanceToDispatchEntity);
+        return Optional.of(instanceToDispatchEntity);
     }
 
 
