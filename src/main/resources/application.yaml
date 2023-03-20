@@ -9,8 +9,8 @@ spring:
           egrunnerverv:
             authorization-grant-type: password
             provider: fint-idp
-            client-id:
-            client-secret:
+            client-id: ${fint.flyt.egrunnerverv.client-id}
+            client-secret: ${fint.flyt.egrunnerverv.client-secret}
   profiles:
     include:
       - flyt-kafka
@@ -23,6 +23,8 @@ fint:
       retentionTimeInDays: 30
       username:
       password:
+      client-id:
+      client-secret:
       registrationId: egrunnerverv
       base-url: https://vigoikstest.service-now.com/api/now/table
       instance-dispatch-interval-cron: "0 0/30 * * * *"
