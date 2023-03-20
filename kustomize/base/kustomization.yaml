@@ -5,3 +5,5 @@ resources:
   - service.yaml
   - config-map.yaml
   - pg-database-and-user.yaml
+  - deployment.yaml
+  - one-password-item.yaml

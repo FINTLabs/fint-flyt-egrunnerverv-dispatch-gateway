@@ -34,6 +34,6 @@ spec:
             - secretRef:
                 name: fint-flyt-egrunnerverv-dispatch-gateway
             - secretRef:
-                name: vlfk-no-fint-flyt-egrunnerverv-dispatch-gateway
+                name: fint-flyt-egrunnerverv-dispatch-gateway-out
             - configMapRef:
                 name: fint-flyt-egrunnerverv-dispatch-gateway

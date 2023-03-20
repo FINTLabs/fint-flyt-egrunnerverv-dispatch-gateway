@@ -3,8 +3,6 @@ kind: Kustomization
 namespace: vlfk-no
 resources:
   - ../../../base
-  - one-password-item.yaml
-  - deployment.yaml
 patchesStrategicMerge:
   - config-map.yaml
 commonLabels:
