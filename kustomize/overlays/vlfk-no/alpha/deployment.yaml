@@ -33,5 +33,7 @@ spec:
                 name: fint-flyt-egrunnerverv-dispatch-gateway-kafka
             - secretRef:
                 name: fint-flyt-egrunnerverv-dispatch-gateway
+            - secretRef:
+                name: vlfk-no-fint-flyt-egrunnerverv-dispatch-gateway
             - configMapRef:
                 name: fint-flyt-egrunnerverv-dispatch-gateway
