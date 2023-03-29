@@ -1,15 +1,16 @@
-import no.fintlabs.model.SimpleCaseInstance
-import no.fintlabs.SimpleCaseInstanceRepository
+package no.fintlabs
+
+import no.fintlabs.model.EgrunnervervSimpleInstance
 import spock.lang.Ignore
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class SimpleCaseInstanceRepositorySpec extends Specification {
-    SimpleCaseInstanceRepository repository = new SimpleCaseInstanceRepository()
+class EgrunnervervSimpleInstanceRepositorySpec extends Specification {
+    EgrunnervervSimpleInstanceRepository repository = new EgrunnervervSimpleInstanceRepository()
 
     def "put should add an instance to the repository"() {
         given:
-        SimpleCaseInstance instance = new SimpleCaseInstance(sysId: "1")
+        EgrunnervervSimpleInstance instance = new EgrunnervervSimpleInstance(sysId: "1")
 
         when:
         repository.put(instance)
@@ -20,13 +21,13 @@ class SimpleCaseInstanceRepositorySpec extends Specification {
 
     def "get should return an instance by its system ID"() {
         given:
-        SimpleCaseInstance instance1 = new SimpleCaseInstance(sysId: "1")
-        SimpleCaseInstance instance2 = new SimpleCaseInstance(sysId: "2")
+        EgrunnervervSimpleInstance instance1 = new EgrunnervervSimpleInstance(sysId: "1")
+        EgrunnervervSimpleInstance instance2 = new EgrunnervervSimpleInstance(sysId: "2")
         repository.put(instance1)
         repository.put(instance2)
 
         when:
-        Optional<SimpleCaseInstance> result = repository.get("2")
+        Optional<EgrunnervervSimpleInstance> result = repository.get("2")
 
         then:
         result.isPresent()
@@ -35,7 +36,7 @@ class SimpleCaseInstanceRepositorySpec extends Specification {
 
     def "get should return an empty optional if the instance does not exist"() {
         when:
-        Optional<SimpleCaseInstance> result = repository.get("1")
+        Optional<EgrunnervervSimpleInstance> result = repository.get("1")
 
         then:
         !result.isPresent()
@@ -43,7 +44,7 @@ class SimpleCaseInstanceRepositorySpec extends Specification {
 
     def "remove should remove an instance from the repository"() {
         given:
-        SimpleCaseInstance instance = new SimpleCaseInstance(sysId: "1")
+        EgrunnervervSimpleInstance instance = new EgrunnervervSimpleInstance(sysId: "1")
         repository.put(instance)
 
         when:
@@ -57,22 +58,22 @@ class SimpleCaseInstanceRepositorySpec extends Specification {
     @Ignore
     def "get should return #result for system ID #sysId"() {
         given:
-        SimpleCaseInstance instance1 = new SimpleCaseInstance(sysId: "1")
-        SimpleCaseInstance instance2 = new SimpleCaseInstance(sysId: "2")
+        EgrunnervervSimpleInstance instance1 = new EgrunnervervSimpleInstance(sysId: "1")
+        EgrunnervervSimpleInstance instance2 = new EgrunnervervSimpleInstance(sysId: "2")
         repository.put(instance1)
         repository.put(instance2)
 
         when:
-        Optional<SimpleCaseInstance> result = repository.get(sysId)
+        Optional<EgrunnervervSimpleInstance> result = repository.get(sysId)
 
         then:
         result.isPresent() == expected
         result.orElse(null) == expectedInstance
 
         where:
-        sysId        | expected | expectedInstance
-        "1"          | true     | instance1
-        "2"          | true     | instance2
+        sysId          | expected | expectedInstance
+        "1"            | true     | instance1
+        "2"            | true     | instance2
         "non-existent" | false    | null
     }
 }

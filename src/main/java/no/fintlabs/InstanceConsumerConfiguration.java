@@ -7,9 +7,9 @@ import no.fintlabs.flyt.kafka.event.InstanceFlowEventConsumerFactoryService;
 import no.fintlabs.kafka.event.EventConsumerFactoryService;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
 import no.fintlabs.kafka.event.topic.EventTopicService;
-import no.fintlabs.model.InstanceCaseToDispatch;
+import no.fintlabs.model.EgrunnervervSakInstanceToDispatch;
 import no.fintlabs.model.InstanceToDispatchEntity;
-import no.fintlabs.model.SimpleCaseInstance;
+import no.fintlabs.model.EgrunnervervSimpleInstance;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,26 +30,26 @@ public class InstanceConsumerConfiguration {
     @Value("${fint.flyt.egrunnerverv.retentionTimeInDays:30}")
     private Long retentionTimeInDays;
 
-    private final SimpleCaseInstanceRepository simpleCaseInstanceRepository;
+    private final EgrunnervervSimpleInstanceRepository egrunnervervSimpleInstanceRepository;
     private final InstanceToDispatchEntityRepository instanceToDispatchEntityRepository;
     private final EventTopicService eventTopicService;
 
     private final WebClientRequestService webClientRequestService;
 
     public InstanceConsumerConfiguration(
-            SimpleCaseInstanceRepository simpleCaseInstanceRepository,
+            EgrunnervervSimpleInstanceRepository egrunnervervSimpleInstanceRepository,
             InstanceToDispatchEntityRepository instanceToDispatchEntityRepository,
             EventTopicService eventTopicService,
             WebClientRequestService webClientRequestService
     ) {
-        this.simpleCaseInstanceRepository = simpleCaseInstanceRepository;
+        this.egrunnervervSimpleInstanceRepository = egrunnervervSimpleInstanceRepository;
         this.instanceToDispatchEntityRepository = instanceToDispatchEntityRepository;
         this.eventTopicService = eventTopicService;
         this.webClientRequestService = webClientRequestService;
     }
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, SimpleCaseInstance> simpleCaseReceivedEventConsumer(
+    public ConcurrentMessageListenerContainer<String, EgrunnervervSimpleInstance> simpleSakReceivedEventConsumer(
             EventConsumerFactoryService eventConsumerFactoryService
     ) {
         EventTopicNameParameters topic = EventTopicNameParameters.builder()
@@ -59,8 +59,24 @@ public class InstanceConsumerConfiguration {
         eventTopicService.ensureTopic(topic, Duration.ofDays(retentionTimeInDays).toMillis());
 
         return eventConsumerFactoryService.createFactory(
-                SimpleCaseInstance.class,
-                consumerRecord -> simpleCaseInstanceRepository.put(consumerRecord.value())
+                EgrunnervervSimpleInstance.class,
+                consumerRecord -> egrunnervervSimpleInstanceRepository.put(consumerRecord.value())
+        ).createContainer(topic);
+    }
+
+    @Bean
+    public ConcurrentMessageListenerContainer<String, EgrunnervervSimpleInstance> simpleJournalpostReceivedEventConsumer(
+            EventConsumerFactoryService eventConsumerFactoryService
+    ) {
+        EventTopicNameParameters topic = EventTopicNameParameters.builder()
+                .eventName("egrunnerverv-journalpost-instance")
+                .build();
+
+        eventTopicService.ensureTopic(topic, Duration.ofDays(retentionTimeInDays).toMillis());
+
+        return eventConsumerFactoryService.createFactory(
+                EgrunnervervSimpleInstance.class,
+                consumerRecord -> egrunnervervSimpleInstanceRepository.put(consumerRecord.value())
         ).createContainer(topic);
     }
 
@@ -81,7 +97,7 @@ public class InstanceConsumerConfiguration {
 
                     if (sourceApplicationId == EGRUNNERVERV_ID) {
                         String sourceApplicationInstanceId = instanceFlowConsumerRecord.getInstanceFlowHeaders().getSourceApplicationInstanceId();
-                        Optional<SimpleCaseInstance> simpleCaseInstance = simpleCaseInstanceRepository.get(sourceApplicationInstanceId);
+                        Optional<EgrunnervervSimpleInstance> simpleCaseInstance = egrunnervervSimpleInstanceRepository.get(sourceApplicationInstanceId);
                         if (simpleCaseInstance.isPresent()) {
                             try {
                                 Optional<InstanceToDispatchEntity> instanceToDispatchEntity =
@@ -109,7 +125,7 @@ public class InstanceConsumerConfiguration {
             String archiveInstanceId
     ) throws JsonProcessingException
     {
-        InstanceCaseToDispatch instanceCaseToDispatch = InstanceCaseToDispatch.builder()
+        EgrunnervervSakInstanceToDispatch egrunnervervSakInstanceToDispatch = EgrunnervervSakInstanceToDispatch.builder()
                 .archiveInstanceId(archiveInstanceId)
                 .archivedTimestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern(EGRUNNERVERV_DATETIME_FORMAT)))
                 .build();
@@ -126,8 +142,8 @@ public class InstanceConsumerConfiguration {
 
         InstanceToDispatchEntity instanceToDispatchEntity = InstanceToDispatchEntity.builder()
                 .sourceApplicationInstanceId(sourceApplicationInstanceId)
-                .instanceToDispatch(objectMapper.writeValueAsString(instanceCaseToDispatch))
-                .classType(InstanceCaseToDispatch.class)
+                .instanceToDispatch(objectMapper.writeValueAsString(egrunnervervSakInstanceToDispatch))
+                .classType(EgrunnervervSakInstanceToDispatch.class)
                 .uri(uri)
                 .build();
 

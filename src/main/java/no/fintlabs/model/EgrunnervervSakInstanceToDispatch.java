@@ -10,7 +10,7 @@ import lombok.extern.jackson.Jacksonized;
 @Setter
 @Builder
 @Jacksonized
-public class InstanceCaseToDispatch {
+public class EgrunnervervSakInstanceToDispatch {
     @JsonProperty("arkivnummer")
     public String archiveInstanceId;
     @JsonProperty("u_elements")

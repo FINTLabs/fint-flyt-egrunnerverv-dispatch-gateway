@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class SimpleCaseInstance {
+public class EgrunnervervSimpleInstance {
     private String sysId;
     private String tableName;
 }
