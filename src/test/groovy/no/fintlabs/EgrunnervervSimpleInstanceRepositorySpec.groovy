@@ -10,7 +10,7 @@ class EgrunnervervSimpleInstanceRepositorySpec extends Specification {
 
     def "put should add an instance to the repository"() {
         given:
-        EgrunnervervSimpleInstance instance = new EgrunnervervSimpleInstance(sysId: "1")
+        EgrunnervervSimpleInstance instance = EgrunnervervSimpleInstance.builder().sysId("1").build()
 
         when:
         repository.put(instance)
@@ -21,8 +21,8 @@ class EgrunnervervSimpleInstanceRepositorySpec extends Specification {
 
     def "get should return an instance by its system ID"() {
         given:
-        EgrunnervervSimpleInstance instance1 = new EgrunnervervSimpleInstance(sysId: "1")
-        EgrunnervervSimpleInstance instance2 = new EgrunnervervSimpleInstance(sysId: "2")
+        EgrunnervervSimpleInstance instance1 = EgrunnervervSimpleInstance.builder().sysId("1").build()
+        EgrunnervervSimpleInstance instance2 = EgrunnervervSimpleInstance.builder().sysId("2").build()
         repository.put(instance1)
         repository.put(instance2)
 
@@ -44,7 +44,7 @@ class EgrunnervervSimpleInstanceRepositorySpec extends Specification {
 
     def "remove should remove an instance from the repository"() {
         given:
-        EgrunnervervSimpleInstance instance = new EgrunnervervSimpleInstance(sysId: "1")
+        EgrunnervervSimpleInstance instance = EgrunnervervSimpleInstance.builder().sysId("1").build()
         repository.put(instance)
 
         when:
@@ -58,8 +58,8 @@ class EgrunnervervSimpleInstanceRepositorySpec extends Specification {
     @Ignore
     def "get should return #result for system ID #sysId"() {
         given:
-        EgrunnervervSimpleInstance instance1 = new EgrunnervervSimpleInstance(sysId: "1")
-        EgrunnervervSimpleInstance instance2 = new EgrunnervervSimpleInstance(sysId: "2")
+        EgrunnervervSimpleInstance instance1 = EgrunnervervSimpleInstance.builder().sysId("1").build()
+        EgrunnervervSimpleInstance instance2 = EgrunnervervSimpleInstance.builder().sysId("2").build()
         repository.put(instance1)
         repository.put(instance2)
 

@@ -24,11 +24,16 @@ fint:
       username:
       password:
       registrationId: egrunnerverv
-      base-url: https://vigoikstest.service-now.com/api/now/table
       instance-dispatch-interval-cron: "0 0/30 * * * *"
+  cache:
+    defaultCacheEntryTimeToLiveMillis: 518400000
+    defaultCacheHeapSize: 1000000
 management:
   endpoints:
     web:
       exposure:
         include:
           - prometheus
+logging:
+  level:
+    no.fintlabs.cache.ehcache.FintEhCacheEventLogger: WARN

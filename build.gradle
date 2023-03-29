@@ -43,7 +43,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'org.postgresql:postgresql'
 
+    implementation 'no.fintlabs:fint-flyt-cache:1.0.0'
+
     implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    implementation 'no.fint:fint-model-resource:0.4.1'
+    implementation("no.fint:fint-arkiv-resource-model-java:${apiVersion}")
+    implementation("no.fint:fint-administrasjon-resource-model-java:${apiVersion}")
 
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'

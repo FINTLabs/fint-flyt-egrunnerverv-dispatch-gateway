@@ -2,6 +2,9 @@ fint:
   org-id: fintlabs.no
   kafka:
     default-replicas: 1
+  flyt:
+    egrunnerverv:
+      base-url: https://vigoikstest.service-now.com/api/now/table
 spring:
   kafka:
     bootstrap-servers: localhost:9092

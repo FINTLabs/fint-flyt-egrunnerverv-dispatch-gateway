@@ -3,13 +3,16 @@ package no.fintlabs;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import no.fint.model.resource.arkiv.noark.SakResource;
 import no.fintlabs.flyt.kafka.event.InstanceFlowEventConsumerFactoryService;
+import no.fintlabs.kafka.CaseRequestService;
 import no.fintlabs.kafka.event.EventConsumerFactoryService;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
 import no.fintlabs.kafka.event.topic.EventTopicService;
+import no.fintlabs.model.EgrunnervervJournalpostInstanceToDispatch;
 import no.fintlabs.model.EgrunnervervSakInstanceToDispatch;
-import no.fintlabs.model.InstanceToDispatchEntity;
 import no.fintlabs.model.EgrunnervervSimpleInstance;
+import no.fintlabs.model.InstanceToDispatchEntity;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,18 +37,28 @@ public class InstanceConsumerConfiguration {
     private final InstanceToDispatchEntityRepository instanceToDispatchEntityRepository;
     private final EventTopicService eventTopicService;
 
+    private final CaseRequestService caseRequestService;
+    private final EgrunnervervJournalpostInstanceToDispatchMappingService journalpostInstanceToDispatchMappingService;
+
     private final WebClientRequestService webClientRequestService;
+
+    private final ObjectMapper objectMapper;
 
     public InstanceConsumerConfiguration(
             EgrunnervervSimpleInstanceRepository egrunnervervSimpleInstanceRepository,
             InstanceToDispatchEntityRepository instanceToDispatchEntityRepository,
             EventTopicService eventTopicService,
+            CaseRequestService caseRequestService,
+            EgrunnervervJournalpostInstanceToDispatchMappingService journalpostInstanceToDispatchMappingService,
             WebClientRequestService webClientRequestService
     ) {
         this.egrunnervervSimpleInstanceRepository = egrunnervervSimpleInstanceRepository;
         this.instanceToDispatchEntityRepository = instanceToDispatchEntityRepository;
         this.eventTopicService = eventTopicService;
+        this.caseRequestService = caseRequestService;
+        this.journalpostInstanceToDispatchMappingService = journalpostInstanceToDispatchMappingService;
         this.webClientRequestService = webClientRequestService;
+        this.objectMapper = new ObjectMapper();
     }
 
     @Bean
@@ -60,8 +73,12 @@ public class InstanceConsumerConfiguration {
 
         return eventConsumerFactoryService.createFactory(
                 EgrunnervervSimpleInstance.class,
-                consumerRecord -> egrunnervervSimpleInstanceRepository.put(consumerRecord.value())
-        ).createContainer(topic);
+                consumerRecord -> egrunnervervSimpleInstanceRepository.put(
+                        consumerRecord.value()
+                                .toBuilder()
+                                .type(EgrunnervervSimpleInstance.Type.SAK)
+                                .build()
+                )).createContainer(topic);
     }
 
     @Bean
@@ -76,7 +93,12 @@ public class InstanceConsumerConfiguration {
 
         return eventConsumerFactoryService.createFactory(
                 EgrunnervervSimpleInstance.class,
-                consumerRecord -> egrunnervervSimpleInstanceRepository.put(consumerRecord.value())
+                consumerRecord -> egrunnervervSimpleInstanceRepository.put(
+                        consumerRecord.value()
+                                .toBuilder()
+                                .type(EgrunnervervSimpleInstance.Type.JOURNALPOST)
+                                .build()
+                )
         ).createContainer(topic);
     }
 
@@ -97,20 +119,27 @@ public class InstanceConsumerConfiguration {
 
                     if (sourceApplicationId == EGRUNNERVERV_ID) {
                         String sourceApplicationInstanceId = instanceFlowConsumerRecord.getInstanceFlowHeaders().getSourceApplicationInstanceId();
-                        Optional<EgrunnervervSimpleInstance> simpleCaseInstance = egrunnervervSimpleInstanceRepository.get(sourceApplicationInstanceId);
-                        if (simpleCaseInstance.isPresent()) {
+                        egrunnervervSimpleInstanceRepository.get(sourceApplicationInstanceId).ifPresent(simpleInstance -> {
                             try {
                                 Optional<InstanceToDispatchEntity> instanceToDispatchEntity =
-                                        storeInstanceToDispatch(
-                                                simpleCaseInstance.get().getTableName(),
-                                                sourceApplicationInstanceId,
-                                                instanceFlowConsumerRecord.getInstanceFlowHeaders().getArchiveInstanceId()
-                                        );
+                                        switch (simpleInstance.getType()) {
+                                            case SAK -> storeSakInstanceToDispatch(
+                                                    simpleInstance.getTableName(),
+                                                    sourceApplicationInstanceId,
+                                                    instanceFlowConsumerRecord.getInstanceFlowHeaders().getArchiveInstanceId()
+                                            );
+                                            case JOURNALPOST -> storeJournalpostInstanceToDispatch(
+                                                    simpleInstance.getTableName(),
+                                                    sourceApplicationInstanceId,
+                                                    instanceFlowConsumerRecord.getInstanceFlowHeaders().getArchiveInstanceId()
+                                            );
+                                        };
                                 instanceToDispatchEntity.ifPresent(webClientRequestService::dispatchInstance);
                             } catch (JsonProcessingException e) {
                                 throw new RuntimeException(e);
                             }
-                        }
+                        });
+
                     }
                 },
                 new CommonLoggingErrorHandler(),
@@ -118,13 +147,47 @@ public class InstanceConsumerConfiguration {
         ).createContainer(topic);
     }
 
-
-    private Optional<InstanceToDispatchEntity> storeInstanceToDispatch(
+    private Optional<InstanceToDispatchEntity> storeJournalpostInstanceToDispatch(
             String tableName,
             String sourceApplicationInstanceId,
             String archiveInstanceId
-    ) throws JsonProcessingException
-    {
+    ) throws JsonProcessingException {
+        String[] splitArchiveInstanceId = archiveInstanceId.split("-");
+        String caseId = splitArchiveInstanceId[0];
+        Long journalpostNummer = Long.parseLong(
+                splitArchiveInstanceId[1]
+                        .replace("[", "")
+                        .replace("]", "")
+        );
+        SakResource sakResource = caseRequestService.getByMappeId(caseId).orElseThrow();
+        EgrunnervervJournalpostInstanceToDispatch egrunnervervJournalpostInstanceToDispatch =
+                journalpostInstanceToDispatchMappingService.map(sakResource, journalpostNummer);
+
+        String uri = UriComponentsBuilder.newInstance()
+                .pathSegment(
+                        tableName,
+                        sourceApplicationInstanceId
+                )
+                .queryParam("sysparm_fields", "journalpostid,journalpostnr,journalposturl")
+                .queryParam("sysparm_query_no_domain", "true")
+                .toUriString();
+
+        InstanceToDispatchEntity instanceToDispatchEntity = InstanceToDispatchEntity.builder()
+                .sourceApplicationInstanceId(sourceApplicationInstanceId)
+                .instanceToDispatch(objectMapper.writeValueAsString(egrunnervervJournalpostInstanceToDispatch))
+                .classType(EgrunnervervJournalpostInstanceToDispatch.class)
+                .uri(uri)
+                .build();
+
+        instanceToDispatchEntityRepository.save(instanceToDispatchEntity);
+        return Optional.of(instanceToDispatchEntity);
+    }
+
+    private Optional<InstanceToDispatchEntity> storeSakInstanceToDispatch(
+            String tableName,
+            String sourceApplicationInstanceId,
+            String archiveInstanceId
+    ) throws JsonProcessingException {
         EgrunnervervSakInstanceToDispatch egrunnervervSakInstanceToDispatch = EgrunnervervSakInstanceToDispatch.builder()
                 .archiveInstanceId(archiveInstanceId)
                 .archivedTimestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern(EGRUNNERVERV_DATETIME_FORMAT)))
@@ -136,9 +199,9 @@ public class InstanceConsumerConfiguration {
                         sourceApplicationInstanceId
                 )
                 .queryParam("sysparm_fields", "u_elements,arkivnummer,u_opprettelse_i_elements_fullfort")
-                .queryParam("sysparm_query_no_domain", "true").toUriString();
+                .queryParam("sysparm_query_no_domain", "true")
+                .toUriString();
 
-        ObjectMapper objectMapper = new ObjectMapper();
 
         InstanceToDispatchEntity instanceToDispatchEntity = InstanceToDispatchEntity.builder()
                 .sourceApplicationInstanceId(sourceApplicationInstanceId)
@@ -150,6 +213,5 @@ public class InstanceConsumerConfiguration {
         instanceToDispatchEntityRepository.save(instanceToDispatchEntity);
         return Optional.of(instanceToDispatchEntity);
     }
-
 
 }

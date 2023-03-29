@@ -1,13 +1,20 @@
 package no.fintlabs.model;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.extern.jackson.Jacksonized;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
-@Setter
-@Builder
+@Jacksonized
+@Builder(toBuilder = true)
 public class EgrunnervervSimpleInstance {
+
+    public enum Type {
+        SAK, JOURNALPOST
+    }
+
     private String sysId;
     private String tableName;
+    private Type type;
+
 }
