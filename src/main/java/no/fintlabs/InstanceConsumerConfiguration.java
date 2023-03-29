@@ -53,7 +53,7 @@ public class InstanceConsumerConfiguration {
             EventConsumerFactoryService eventConsumerFactoryService
     ) {
         EventTopicNameParameters topic = EventTopicNameParameters.builder()
-                .eventName("egrunnerverv-case-instance")
+                .eventName("egrunnerverv-sak-instance")
                 .build();
 
         eventTopicService.ensureTopic(topic, Duration.ofDays(retentionTimeInDays).toMillis());
