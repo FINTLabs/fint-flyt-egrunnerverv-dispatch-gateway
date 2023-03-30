@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static no.fintlabs.links.ResourceLinkUtil.getFirstLink;
+import static no.fintlabs.links.ResourceLinkUtil.getFirstSelfLink;
 
 @Service
 public class EgrunnervervJournalpostInstanceToDispatchMappingService {
@@ -77,7 +78,7 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
                 .toList();
 
         AdministrativEnhetResource administrativEnhetResource = administrativEnhetResourceCache.get(
-                getFirstLink(journalpostResource::getAdministrativEnhet, journalpostResource, "Administrativ enhet")
+                getFirstSelfLink(journalpostResource)
         );
 
         JournalStatusResource journalStatusResource = journalStatusResourceCache.get(
