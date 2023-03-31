@@ -12,14 +12,6 @@ import java.util.stream.Stream;
 
 public class ResourceLinkUtil {
 
-    public static String getFirstSelfLink(FintLinks resource) {
-        return resource.getSelfLinks()
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> NoSuchLinkException.noSelfLink(resource))
-                .getHref();
-    }
-
     public static List<String> getSelfLinks(FintLinks resource) {
         return resource.getSelfLinks()
                 .stream()
@@ -27,12 +19,11 @@ public class ResourceLinkUtil {
                 .collect(Collectors.toList());
     }
 
-    public static String getFirstLink(Supplier<List<Link>> linkProducer, FintLinks resource, String linkedResourceName) {
+    public static Optional<String> getOptionalFirstLink(Supplier<List<Link>> linkProducer) {
         return Optional.ofNullable(linkProducer.get())
                 .map(Collection::stream)
                 .flatMap(Stream::findFirst)
-                .map(Link::getHref)
-                .orElseThrow(() -> NoSuchLinkException.noLink(resource, linkedResourceName));
+                .map(Link::getHref);
     }
 
 }

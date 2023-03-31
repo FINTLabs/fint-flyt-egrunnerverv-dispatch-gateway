@@ -1,6 +1,5 @@
 package no.fintlabs.kafka;
 
-import lombok.extern.slf4j.Slf4j;
 import no.fint.model.resource.arkiv.noark.SakResource;
 import no.fintlabs.kafka.common.topic.TopicCleanupPolicyParameters;
 import no.fintlabs.kafka.requestreply.RequestProducer;
@@ -18,7 +17,6 @@ import java.time.Duration;
 import java.util.Optional;
 
 @Service
-@Slf4j
 public class CaseRequestService {
 
     private final RequestProducer<String, SakResource> requestProducer;

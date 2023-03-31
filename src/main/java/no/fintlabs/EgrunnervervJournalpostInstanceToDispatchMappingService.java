@@ -17,11 +17,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static no.fintlabs.links.ResourceLinkUtil.getFirstLink;
-import static no.fintlabs.links.ResourceLinkUtil.getFirstSelfLink;
+import static no.fintlabs.links.ResourceLinkUtil.getOptionalFirstLink;
 
 @Service
 public class EgrunnervervJournalpostInstanceToDispatchMappingService {
@@ -52,17 +52,19 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
         this.personResourceCache = personResourceCache;
     }
 
-    public EgrunnervervJournalpostInstanceToDispatch map(SakResource sakResource, Long journalpostNummer) {
-        ArkivressursResource saksansvarligArkivressurs = arkivressursResourceCache.get(
-                getFirstLink(sakResource::getSaksansvarlig, sakResource, "Saksansvarlig")
-        );
-        PersonalressursResource saksansvarligPersonalressursResource = personalressursResourceCache.get(
-                getFirstLink(saksansvarligArkivressurs::getPersonalressurs, saksansvarligArkivressurs, "Personalressurs")
-        );
 
-        PersonResource saksansvarligPersonResource = personResourceCache.get(
-                getFirstLink(saksansvarligPersonalressursResource::getPerson, saksansvarligPersonalressursResource, "Person")
-        );
+    public EgrunnervervJournalpostInstanceToDispatch map(SakResource sakResource, Long journalpostNummer) {
+
+        Optional<PersonalressursResource> saksansvarligPersonalressursResource =
+                getOptionalFirstLink(sakResource::getSaksansvarlig)
+                        .flatMap(arkivressursResourceCache::getOptional)
+                        .flatMap(arkivressurs -> getOptionalFirstLink(arkivressurs::getPersonalressurs))
+                        .flatMap(personalressursResourceCache::getOptional);
+
+        Optional<PersonResource> saksansvarligPersonResource =
+                saksansvarligPersonalressursResource
+                        .flatMap(personalressursResource -> getOptionalFirstLink(personalressursResource::getPerson))
+                        .flatMap(personResourceCache::getOptional);
 
         JournalpostResource journalpostResource = sakResource.getJournalpost()
                 .stream()
@@ -72,27 +74,29 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
 
         List<DokumentTypeResource> dokumentTypeResources = journalpostResource.getDokumentbeskrivelse()
                 .stream()
-                .map(dokumentBeskrivelsesResource -> dokumentTypeResourceCache.get(
-                        getFirstLink(dokumentBeskrivelsesResource::getDokumentType, dokumentBeskrivelsesResource, "Dokumenttype"))
+                .map(dokumentBeskrivelsesResource -> getOptionalFirstLink(dokumentBeskrivelsesResource::getDokumentType)
+                        .flatMap(dokumentTypeResourceCache::getOptional)
                 )
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .toList();
 
-        AdministrativEnhetResource administrativEnhetResource = administrativEnhetResourceCache.get(
-                getFirstSelfLink(journalpostResource)
-        );
+        Optional<AdministrativEnhetResource> administrativEnhetResource =
+                getOptionalFirstLink(journalpostResource::getAdministrativEnhet)
+                        .flatMap(administrativEnhetResourceCache::getOptional);
 
-        JournalStatusResource journalStatusResource = journalStatusResourceCache.get(
-                getFirstLink(journalpostResource::getJournalstatus, journalpostResource, "Journalstatus")
-        );
+        Optional<JournalStatusResource> journalStatusResource =
+                getOptionalFirstLink(journalpostResource::getJournalstatus)
+                        .flatMap(journalStatusResourceCache::getOptional);
 
-        JournalpostTypeResource journalpostTypeResource = journalpostTypeResourceCache.get(
-                getFirstLink(journalpostResource::getJournalposttype, journalpostResource, "Journalposttype")
-        );
+        Optional<JournalpostTypeResource> journalpostTypeResource =
+                getOptionalFirstLink(journalpostResource::getJournalposttype)
+                        .flatMap(journalpostTypeResourceCache::getOptional);
 
         return EgrunnervervJournalpostInstanceToDispatch
                 .builder()
-                .statusId(journalStatusResource.getSystemId().getIdentifikatorverdi())
-                .dokumentTypeNavn(journalpostTypeResource.getNavn())
+                .statusId(journalStatusResource.map(Begrep::getSystemId).map(Identifikator::getIdentifikatorverdi).orElse(""))
+                .dokumentTypeNavn(journalpostTypeResource.map(Begrep::getNavn).orElse(""))
                 .dokumentkategoriId(dokumentTypeResources
                         .stream()
                         .map(Begrep::getSystemId)
@@ -104,16 +108,27 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
                         .map(Begrep::getNavn)
                         .collect(Collectors.joining(", "))
                 )
-                .saksansvarligBrukernavn(saksansvarligPersonalressursResource.getBrukernavn().getIdentifikatorverdi())
-                .saksansvarligNavn(Stream.of(
-                                        saksansvarligPersonResource.getNavn().getFornavn(),
-                                        saksansvarligPersonResource.getNavn().getMellomnavn(),
-                                        saksansvarligPersonResource.getNavn().getEtternavn()
-                                ).filter(Objects::nonNull)
-                                .collect(Collectors.joining(" "))
+                .saksansvarligBrukernavn(
+                        saksansvarligPersonalressursResource
+                                .map(PersonalressursResource::getBrukernavn)
+                                .map(Identifikator::getIdentifikatorverdi)
+                                .orElse("")
                 )
-                .adminEnhetKortnavn(administrativEnhetResource.getSystemId().getIdentifikatorverdi())
-                .adminEnhetNavn(administrativEnhetResource.getNavn())
+                .saksansvarligNavn(saksansvarligPersonResource.map(resource -> Stream.of(
+                                                resource.getNavn().getFornavn(),
+                                                resource.getNavn().getMellomnavn(),
+                                                resource.getNavn().getEtternavn()
+                                        ).filter(Objects::nonNull)
+                                        .collect(Collectors.joining(" "))
+                        ).orElse("")
+                )
+                .adminEnhetKortnavn(
+                        administrativEnhetResource
+                                .map(AdministrativEnhetResource::getSystemId)
+                                .map(Identifikator::getIdentifikatorverdi)
+                                .orElse("")
+                )
+                .adminEnhetNavn(administrativEnhetResource.map(AdministrativEnhetResource::getNavn).orElse(""))
                 .build();
     }
 
