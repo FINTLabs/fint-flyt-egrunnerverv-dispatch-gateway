@@ -44,6 +44,7 @@ public class WebClientRequestService {
                     .publishOn(Schedulers.boundedElastic())
                     .doOnSuccess(success -> {
                         log.info("success {}", success);
+                        log.debug("instanceToDispatch="+instanceToDispatchEntity.getInstanceToDispatch());
                         instanceToDispatchEntityRepository.delete(instanceToDispatchEntity);
                     })
                     .doOnError(error -> log.error("Error msg from webclient: " + error.getMessage()))
