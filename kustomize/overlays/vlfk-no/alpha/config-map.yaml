@@ -7,3 +7,4 @@ data:
   JAVA_TOOL_OPTIONS: '-XX:+ExitOnOutOfMemoryError -Xmx1840M'
   fint.org-id: 'vlfk.no'
   fint.flyt.egrunnerverv.base-url: 'https://vigoikstest.service-now.com/api/now/table'
+  logging.level.no.fintlabs: 'DEBUG'
