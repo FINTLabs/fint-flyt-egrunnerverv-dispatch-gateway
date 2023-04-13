@@ -207,7 +207,7 @@ public class InstanceConsumerConfiguration {
                         tableName,
                         sourceApplicationInstanceId
                 )
-                .queryParam("sysparm_fields", "journalpostid")
+                .queryParam("sysparm_fields", "journalpostnr")
                 .queryParam("sysparm_query_no_domain", "true")
                 .toUriString();
 
