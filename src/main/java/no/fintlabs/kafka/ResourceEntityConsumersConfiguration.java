@@ -2,10 +2,7 @@ package no.fintlabs.kafka;
 
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
-import no.fint.model.resource.arkiv.kodeverk.DokumentTypeResource;
-import no.fint.model.resource.arkiv.kodeverk.JournalStatusResource;
-import no.fint.model.resource.arkiv.kodeverk.JournalpostTypeResource;
-import no.fint.model.resource.arkiv.kodeverk.TilgangsrestriksjonResource;
+import no.fint.model.resource.arkiv.kodeverk.*;
 import no.fint.model.resource.arkiv.noark.AdministrativEnhetResource;
 import no.fint.model.resource.arkiv.noark.ArkivressursResource;
 import no.fint.model.resource.felles.PersonResource;
@@ -83,6 +80,17 @@ public class ResourceEntityConsumersConfiguration {
                 "arkiv.kodeverk.tilgangsrestriksjon",
                 TilgangsrestriksjonResource.class,
                 tilgangsrestriksjonResourceCache
+        );
+    }
+
+    @Bean
+    ConcurrentMessageListenerContainer<String, SkjermingshjemmelResource> skjermingshjemmelResourceEntityConsumer(
+            FintCache<String, SkjermingshjemmelResource> skjermingshjemmelResourceCache
+    ) {
+        return createCacheConsumer(
+                "arkiv.kodeverk.skjermingshjemmel",
+                SkjermingshjemmelResource.class,
+                skjermingshjemmelResourceCache
         );
     }
 

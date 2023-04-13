@@ -21,7 +21,7 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -168,7 +168,6 @@ public class InstanceConsumerConfiguration {
                         tableName,
                         sourceApplicationInstanceId
                 )
-                .queryParam("sysparm_fields", "journalpostid,journalpostnr,journalposturl")
                 .queryParam("sysparm_query_no_domain", "true")
                 .toUriString();
 
@@ -188,9 +187,18 @@ public class InstanceConsumerConfiguration {
             String sourceApplicationInstanceId,
             String archiveInstanceId
     ) throws JsonProcessingException {
+        SakResource sakResource = caseRequestService.getByMappeId(archiveInstanceId).orElseThrow();
+
         EgrunnervervSakInstanceToDispatch egrunnervervSakInstanceToDispatch = EgrunnervervSakInstanceToDispatch.builder()
-                .archiveInstanceId(archiveInstanceId)
-                .archivedTimestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern(EGRUNNERVERV_DATETIME_FORMAT)))
+                .arkivnummer(archiveInstanceId)
+                .opprettelse_i_elements_fullfort(
+                        sakResource
+                                .getOpprettetDato()
+                                .toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDateTime()
+                                .format(DateTimeFormatter.ofPattern(EGRUNNERVERV_DATETIME_FORMAT))
+                )
                 .build();
 
         String uri = UriComponentsBuilder.newInstance()
@@ -198,10 +206,8 @@ public class InstanceConsumerConfiguration {
                         tableName,
                         sourceApplicationInstanceId
                 )
-                .queryParam("sysparm_fields", "u_elements,arkivnummer,u_opprettelse_i_elements_fullfort")
                 .queryParam("sysparm_query_no_domain", "true")
                 .toUriString();
-
 
         InstanceToDispatchEntity instanceToDispatchEntity = InstanceToDispatchEntity.builder()
                 .sourceApplicationInstanceId(sourceApplicationInstanceId)

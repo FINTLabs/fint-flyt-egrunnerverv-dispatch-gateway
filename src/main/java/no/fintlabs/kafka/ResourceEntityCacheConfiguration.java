@@ -1,10 +1,7 @@
 package no.fintlabs.kafka;
 
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
-import no.fint.model.resource.arkiv.kodeverk.DokumentTypeResource;
-import no.fint.model.resource.arkiv.kodeverk.JournalStatusResource;
-import no.fint.model.resource.arkiv.kodeverk.JournalpostTypeResource;
-import no.fint.model.resource.arkiv.kodeverk.TilgangsrestriksjonResource;
+import no.fint.model.resource.arkiv.kodeverk.*;
 import no.fint.model.resource.arkiv.noark.AdministrativEnhetResource;
 import no.fint.model.resource.arkiv.noark.ArkivressursResource;
 import no.fint.model.resource.felles.PersonResource;
@@ -42,6 +39,11 @@ public class ResourceEntityCacheConfiguration {
     @Bean
     FintCache<String, TilgangsrestriksjonResource> tilgangsrestriksjonResourceCache() {
         return createCache(TilgangsrestriksjonResource.class);
+    }
+
+    @Bean
+    FintCache<String, SkjermingshjemmelResource> skjermingshjemmelResourceCache() {
+        return createCache(SkjermingshjemmelResource.class);
     }
 
     @Bean

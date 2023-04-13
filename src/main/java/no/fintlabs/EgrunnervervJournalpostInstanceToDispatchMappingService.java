@@ -3,24 +3,22 @@ package no.fintlabs;
 import no.fint.model.felles.basisklasser.Begrep;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
-import no.fint.model.resource.arkiv.kodeverk.DokumentTypeResource;
-import no.fint.model.resource.arkiv.kodeverk.JournalStatusResource;
-import no.fint.model.resource.arkiv.kodeverk.JournalpostTypeResource;
-import no.fint.model.resource.arkiv.noark.AdministrativEnhetResource;
-import no.fint.model.resource.arkiv.noark.ArkivressursResource;
-import no.fint.model.resource.arkiv.noark.JournalpostResource;
-import no.fint.model.resource.arkiv.noark.SakResource;
+import no.fint.model.resource.arkiv.kodeverk.*;
+import no.fint.model.resource.arkiv.noark.*;
 import no.fint.model.resource.felles.PersonResource;
 import no.fintlabs.cache.FintCache;
 import no.fintlabs.model.EgrunnervervJournalpostInstanceToDispatch;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static no.fintlabs.InstanceConsumerConfiguration.EGRUNNERVERV_DATETIME_FORMAT;
 import static no.fintlabs.links.ResourceLinkUtil.getOptionalFirstLink;
 
 @Service
@@ -31,6 +29,8 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
     private final FintCache<String, DokumentTypeResource> dokumentTypeResourceCache;
     private final FintCache<String, JournalStatusResource> journalStatusResourceCache;
     private final FintCache<String, JournalpostTypeResource> journalpostTypeResourceCache;
+    private final FintCache<String, TilgangsrestriksjonResource> tilgangsrestriksjonResourceCache;
+    private final FintCache<String, SkjermingshjemmelResource> skjermingshjemmelResourceCache;
     private final FintCache<String, PersonalressursResource> personalressursResourceCache;
     private final FintCache<String, PersonResource> personResourceCache;
 
@@ -40,6 +40,8 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
             FintCache<String, DokumentTypeResource> dokumentTypeResourceCache,
             FintCache<String, JournalStatusResource> journalStatusResourceCache,
             FintCache<String, JournalpostTypeResource> journalpostTypeResourceCache,
+            FintCache<String, TilgangsrestriksjonResource> tilgangsrestriksjonResourceCache,
+            FintCache<String, SkjermingshjemmelResource> skjermingshjemmelResourceCache,
             FintCache<String, PersonalressursResource> personalressursResourceCache,
             FintCache<String, PersonResource> personResourceCache
     ) {
@@ -48,6 +50,8 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
         this.dokumentTypeResourceCache = dokumentTypeResourceCache;
         this.journalStatusResourceCache = journalStatusResourceCache;
         this.journalpostTypeResourceCache = journalpostTypeResourceCache;
+        this.tilgangsrestriksjonResourceCache = tilgangsrestriksjonResourceCache;
+        this.skjermingshjemmelResourceCache = skjermingshjemmelResourceCache;
         this.personalressursResourceCache = personalressursResourceCache;
         this.personResourceCache = personResourceCache;
     }
@@ -93,43 +97,93 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
                 getOptionalFirstLink(journalpostResource::getJournalposttype)
                         .flatMap(journalpostTypeResourceCache::getOptional);
 
-        return EgrunnervervJournalpostInstanceToDispatch
-                .builder()
-                .statusId(journalStatusResource.map(Begrep::getSystemId).map(Identifikator::getIdentifikatorverdi).orElse(""))
-                .dokumentTypeNavn(journalpostTypeResource.map(Begrep::getNavn).orElse(""))
-                .dokumentkategoriId(dokumentTypeResources
-                        .stream()
-                        .map(Begrep::getSystemId)
-                        .map(Identifikator::getIdentifikatorverdi)
-                        .collect(Collectors.joining(", "))
-                )
-                .dokumentkategoriNavn(dokumentTypeResources
-                        .stream()
-                        .map(Begrep::getNavn)
-                        .collect(Collectors.joining(", "))
-                )
-                .saksansvarligBrukernavn(
-                        saksansvarligPersonalressursResource
-                                .map(PersonalressursResource::getBrukernavn)
+        SkjermingResource skjermingResource = journalpostResource.getSkjerming();
+
+        Optional<TilgangsrestriksjonResource> tilgangsrestriksjonResource =
+                getOptionalFirstLink(skjermingResource::getTilgangsrestriksjon)
+                        .flatMap(tilgangsrestriksjonResourceCache::getOptional);
+
+        Optional<SkjermingshjemmelResource> skjermingshjemmelResource =
+                getOptionalFirstLink(skjermingResource::getSkjermingshjemmel)
+                        .flatMap(skjermingshjemmelResourceCache::getOptional);
+
+        EgrunnervervJournalpostInstanceToDispatch.EgrunnervervJournalpostInstanceToDispatchBuilder builder =
+                EgrunnervervJournalpostInstanceToDispatch
+                        .builder()
+                        .journalpostnr(
+                                sakResource.getMappeId().getIdentifikatorverdi() +
+                                        "-" +
+                                        journalpostResource.getJournalPostnummer().toString()
+                        )
+                        .tittel(journalpostResource.getTittel())
+                        .dokumentDato(
+                                journalpostResource
+                                        .getDokumentetsDato()
+                                        .toInstant()
+                                        .atZone(ZoneId.systemDefault())
+                                        .toLocalDateTime()
+                                        .format(DateTimeFormatter.ofPattern(EGRUNNERVERV_DATETIME_FORMAT))
+                        )
+                        .dokumentkategoriId(dokumentTypeResources
+                                .stream()
+                                .map(Begrep::getSystemId)
                                 .map(Identifikator::getIdentifikatorverdi)
-                                .orElse("")
+                                .collect(Collectors.joining(", "))
+                        )
+                        .dokumentkategoriNavn(dokumentTypeResources
+                                .stream()
+                                .map(Begrep::getNavn)
+                                .collect(Collectors.joining(", "))
+                        )
+                        .antallVedlegg(journalpostResource.getAntallVedlegg());
+
+        journalStatusResource
+                .map(Begrep::getSystemId)
+                .map(Identifikator::getIdentifikatorverdi)
+                .ifPresent(builder::statusId);
+
+        tilgangsrestriksjonResource
+                .map(Begrep::getKode)
+                .ifPresent(builder::tilgangskode);
+
+        skjermingshjemmelResource
+                .map(Begrep::getKode)
+                .ifPresent(builder::hjemmel);
+
+        journalpostTypeResource
+                .map(Begrep::getSystemId)
+                .map(Identifikator::getIdentifikatorverdi)
+                .ifPresent(builder::dokumentTypeId);
+
+        journalpostTypeResource
+                .map(Begrep::getNavn)
+                .ifPresent(builder::dokumentTypeNavn);
+
+        saksansvarligPersonalressursResource
+                .map(PersonalressursResource::getBrukernavn)
+                .map(Identifikator::getIdentifikatorverdi)
+                .ifPresent(builder::saksansvarligBrukernavn);
+
+        saksansvarligPersonResource
+                .map(resource -> Stream.of(
+                                        resource.getNavn().getFornavn(),
+                                        resource.getNavn().getMellomnavn(),
+                                        resource.getNavn().getEtternavn()
+                                ).filter(Objects::nonNull)
+                                .collect(Collectors.joining(" "))
                 )
-                .saksansvarligNavn(saksansvarligPersonResource.map(resource -> Stream.of(
-                                                resource.getNavn().getFornavn(),
-                                                resource.getNavn().getMellomnavn(),
-                                                resource.getNavn().getEtternavn()
-                                        ).filter(Objects::nonNull)
-                                        .collect(Collectors.joining(" "))
-                        ).orElse("")
-                )
-                .adminEnhetKortnavn(
-                        administrativEnhetResource
-                                .map(AdministrativEnhetResource::getSystemId)
-                                .map(Identifikator::getIdentifikatorverdi)
-                                .orElse("")
-                )
-                .adminEnhetNavn(administrativEnhetResource.map(AdministrativEnhetResource::getNavn).orElse(""))
-                .build();
+                .ifPresent(builder::saksansvarligNavn);
+
+        administrativEnhetResource
+                .map(AdministrativEnhetResource::getSystemId)
+                .map(Identifikator::getIdentifikatorverdi)
+                .ifPresent(builder::adminEnhetKortnavn);
+
+        administrativEnhetResource
+                .map(AdministrativEnhetResource::getNavn)
+                .ifPresent(builder::adminEnhetNavn);
+
+        return builder.build();
     }
 
 }
