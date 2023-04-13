@@ -36,6 +36,8 @@ public class WebClientRequestService {
             Object instanceToDispatch;
             instanceToDispatch = objectMapper.readValue(instanceToDispatchEntity.getInstanceToDispatch(), instanceToDispatchEntity.getClassType());
 
+            log.debug("instanceToDispatch=" + instanceToDispatchEntity.getInstanceToDispatch());
+
             webClient.patch()
                     .uri(instanceToDispatchEntity.getUri())
                     .body(Mono.just(instanceToDispatch), instanceToDispatchEntity.getClassType())
@@ -44,7 +46,6 @@ public class WebClientRequestService {
                     .publishOn(Schedulers.boundedElastic())
                     .doOnSuccess(success -> {
                         log.info("success {}", success);
-                        log.debug("instanceToDispatch="+instanceToDispatchEntity.getInstanceToDispatch());
                         instanceToDispatchEntityRepository.delete(instanceToDispatchEntity);
                     })
                     .doOnError(error -> log.error("Error msg from webclient: " + error.getMessage()))

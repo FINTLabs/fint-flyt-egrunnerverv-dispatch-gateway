@@ -118,7 +118,7 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
                         .tittel(journalpostResource.getTittel())
                         .dokumentDato(
                                 journalpostResource
-                                        .getDokumentetsDato()
+                                        .getOpprettetDato()
                                         .toInstant()
                                         .atZone(ZoneId.systemDefault())
                                         .toLocalDateTime()

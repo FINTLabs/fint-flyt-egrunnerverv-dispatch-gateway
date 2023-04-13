@@ -147,41 +147,6 @@ public class InstanceConsumerConfiguration {
         ).createContainer(topic);
     }
 
-    private Optional<InstanceToDispatchEntity> storeJournalpostInstanceToDispatch(
-            String tableName,
-            String sourceApplicationInstanceId,
-            String archiveInstanceId
-    ) throws JsonProcessingException {
-        String[] splitArchiveInstanceId = archiveInstanceId.split("-");
-        String caseId = splitArchiveInstanceId[0];
-        Long journalpostNummer = Long.parseLong(
-                splitArchiveInstanceId[1]
-                        .replace("[", "")
-                        .replace("]", "")
-        );
-        SakResource sakResource = caseRequestService.getByMappeId(caseId).orElseThrow();
-        EgrunnervervJournalpostInstanceToDispatch egrunnervervJournalpostInstanceToDispatch =
-                journalpostInstanceToDispatchMappingService.map(sakResource, journalpostNummer);
-
-        String uri = UriComponentsBuilder.newInstance()
-                .pathSegment(
-                        tableName,
-                        sourceApplicationInstanceId
-                )
-                .queryParam("sysparm_query_no_domain", "true")
-                .toUriString();
-
-        InstanceToDispatchEntity instanceToDispatchEntity = InstanceToDispatchEntity.builder()
-                .sourceApplicationInstanceId(sourceApplicationInstanceId)
-                .instanceToDispatch(objectMapper.writeValueAsString(egrunnervervJournalpostInstanceToDispatch))
-                .classType(EgrunnervervJournalpostInstanceToDispatch.class)
-                .uri(uri)
-                .build();
-
-        instanceToDispatchEntityRepository.save(instanceToDispatchEntity);
-        return Optional.of(instanceToDispatchEntity);
-    }
-
     private Optional<InstanceToDispatchEntity> storeSakInstanceToDispatch(
             String tableName,
             String sourceApplicationInstanceId,
@@ -206,6 +171,7 @@ public class InstanceConsumerConfiguration {
                         tableName,
                         sourceApplicationInstanceId
                 )
+                .queryParam("sysparm_fields", "arkivnummer")
                 .queryParam("sysparm_query_no_domain", "true")
                 .toUriString();
 
@@ -213,6 +179,42 @@ public class InstanceConsumerConfiguration {
                 .sourceApplicationInstanceId(sourceApplicationInstanceId)
                 .instanceToDispatch(objectMapper.writeValueAsString(egrunnervervSakInstanceToDispatch))
                 .classType(EgrunnervervSakInstanceToDispatch.class)
+                .uri(uri)
+                .build();
+
+        instanceToDispatchEntityRepository.save(instanceToDispatchEntity);
+        return Optional.of(instanceToDispatchEntity);
+    }
+
+    private Optional<InstanceToDispatchEntity> storeJournalpostInstanceToDispatch(
+            String tableName,
+            String sourceApplicationInstanceId,
+            String archiveInstanceId
+    ) throws JsonProcessingException {
+        String[] splitArchiveInstanceId = archiveInstanceId.split("-");
+        String caseId = splitArchiveInstanceId[0];
+        Long journalpostNummer = Long.parseLong(
+                splitArchiveInstanceId[1]
+                        .replace("[", "")
+                        .replace("]", "")
+        );
+        SakResource sakResource = caseRequestService.getByMappeId(caseId).orElseThrow();
+        EgrunnervervJournalpostInstanceToDispatch egrunnervervJournalpostInstanceToDispatch =
+                journalpostInstanceToDispatchMappingService.map(sakResource, journalpostNummer);
+
+        String uri = UriComponentsBuilder.newInstance()
+                .pathSegment(
+                        tableName,
+                        sourceApplicationInstanceId
+                )
+                .queryParam("sysparm_fields", "journalpostid")
+                .queryParam("sysparm_query_no_domain", "true")
+                .toUriString();
+
+        InstanceToDispatchEntity instanceToDispatchEntity = InstanceToDispatchEntity.builder()
+                .sourceApplicationInstanceId(sourceApplicationInstanceId)
+                .instanceToDispatch(objectMapper.writeValueAsString(egrunnervervJournalpostInstanceToDispatch))
+                .classType(EgrunnervervJournalpostInstanceToDispatch.class)
                 .uri(uri)
                 .build();
 
