@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,7 +25,6 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
 
     private final FintCache<String, AdministrativEnhetResource> administrativEnhetResourceCache;
     private final FintCache<String, ArkivressursResource> arkivressursResourceCache;
-    private final FintCache<String, DokumentTypeResource> dokumentTypeResourceCache;
     private final FintCache<String, JournalStatusResource> journalStatusResourceCache;
     private final FintCache<String, JournalpostTypeResource> journalpostTypeResourceCache;
     private final FintCache<String, TilgangsrestriksjonResource> tilgangsrestriksjonResourceCache;
@@ -37,7 +35,6 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
     public EgrunnervervJournalpostInstanceToDispatchMappingService(
             FintCache<String, AdministrativEnhetResource> administrativEnhetResourceCache,
             FintCache<String, ArkivressursResource> arkivressursResourceCache,
-            FintCache<String, DokumentTypeResource> dokumentTypeResourceCache,
             FintCache<String, JournalStatusResource> journalStatusResourceCache,
             FintCache<String, JournalpostTypeResource> journalpostTypeResourceCache,
             FintCache<String, TilgangsrestriksjonResource> tilgangsrestriksjonResourceCache,
@@ -47,7 +44,6 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
     ) {
         this.administrativEnhetResourceCache = administrativEnhetResourceCache;
         this.arkivressursResourceCache = arkivressursResourceCache;
-        this.dokumentTypeResourceCache = dokumentTypeResourceCache;
         this.journalStatusResourceCache = journalStatusResourceCache;
         this.journalpostTypeResourceCache = journalpostTypeResourceCache;
         this.tilgangsrestriksjonResourceCache = tilgangsrestriksjonResourceCache;
@@ -75,15 +71,6 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
                 .filter(journalpost -> Objects.equals(journalpost.getJournalPostnummer(), journalpostNummer))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No journalpost with journalpostNummer=" + journalpostNummer));
-
-        List<DokumentTypeResource> dokumentTypeResources = journalpostResource.getDokumentbeskrivelse()
-                .stream()
-                .map(dokumentBeskrivelsesResource -> getOptionalFirstLink(dokumentBeskrivelsesResource::getDokumentType)
-                        .flatMap(dokumentTypeResourceCache::getOptional)
-                )
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .toList();
 
         Optional<AdministrativEnhetResource> administrativEnhetResource =
                 getOptionalFirstLink(journalpostResource::getAdministrativEnhet)
@@ -116,26 +103,14 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
                                         journalpostResource.getJournalPostnummer().toString()
                         )
                         .tittel(journalpostResource.getTittel())
-                        .dokumentDato(
+                        .dokumentdato(
                                 journalpostResource
                                         .getOpprettetDato()
                                         .toInstant()
                                         .atZone(ZoneId.systemDefault())
                                         .toLocalDateTime()
                                         .format(DateTimeFormatter.ofPattern(EGRUNNERVERV_DATETIME_FORMAT))
-                        )
-                        .dokumentkategoriId(dokumentTypeResources
-                                .stream()
-                                .map(Begrep::getSystemId)
-                                .map(Identifikator::getIdentifikatorverdi)
-                                .collect(Collectors.joining(", "))
-                        )
-                        .dokumentkategoriNavn(dokumentTypeResources
-                                .stream()
-                                .map(Begrep::getNavn)
-                                .collect(Collectors.joining(", "))
-                        )
-                        .antallVedlegg(journalpostResource.getAntallVedlegg());
+                        );
 
         journalStatusResource
                 .map(Begrep::getSystemId)
@@ -147,22 +122,23 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
                 .ifPresent(builder::tilgangskode);
 
         skjermingshjemmelResource
-                .map(Begrep::getKode)
+                .map(Begrep::getSystemId)
+                .map(Identifikator::getIdentifikatorverdi)
                 .ifPresent(builder::hjemmel);
 
         journalpostTypeResource
                 .map(Begrep::getSystemId)
                 .map(Identifikator::getIdentifikatorverdi)
-                .ifPresent(builder::dokumentTypeId);
+                .ifPresent(builder::dokumenttypeid);
 
         journalpostTypeResource
                 .map(Begrep::getNavn)
-                .ifPresent(builder::dokumentTypeNavn);
+                .ifPresent(builder::dokumenttypenavn);
 
         saksansvarligPersonalressursResource
                 .map(PersonalressursResource::getBrukernavn)
                 .map(Identifikator::getIdentifikatorverdi)
-                .ifPresent(builder::saksansvarligBrukernavn);
+                .ifPresent(builder::saksansvarligbrukernavn);
 
         saksansvarligPersonResource
                 .map(resource -> Stream.of(
@@ -172,16 +148,16 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
                                 ).filter(Objects::nonNull)
                                 .collect(Collectors.joining(" "))
                 )
-                .ifPresent(builder::saksansvarligNavn);
+                .ifPresent(builder::saksansvarlignavn);
 
         administrativEnhetResource
                 .map(AdministrativEnhetResource::getSystemId)
                 .map(Identifikator::getIdentifikatorverdi)
-                .ifPresent(builder::adminEnhetKortnavn);
+                .ifPresent(builder::adminenhetkortnavn);
 
         administrativEnhetResource
                 .map(AdministrativEnhetResource::getNavn)
-                .ifPresent(builder::adminEnhetNavn);
+                .ifPresent(builder::adminenhetnavn);
 
         return builder.build();
     }

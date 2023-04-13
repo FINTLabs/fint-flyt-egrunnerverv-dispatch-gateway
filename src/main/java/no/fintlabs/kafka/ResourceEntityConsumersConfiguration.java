@@ -2,7 +2,10 @@ package no.fintlabs.kafka;
 
 import no.fint.model.resource.FintLinks;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
-import no.fint.model.resource.arkiv.kodeverk.*;
+import no.fint.model.resource.arkiv.kodeverk.JournalStatusResource;
+import no.fint.model.resource.arkiv.kodeverk.JournalpostTypeResource;
+import no.fint.model.resource.arkiv.kodeverk.SkjermingshjemmelResource;
+import no.fint.model.resource.arkiv.kodeverk.TilgangsrestriksjonResource;
 import no.fint.model.resource.arkiv.noark.AdministrativEnhetResource;
 import no.fint.model.resource.arkiv.noark.ArkivressursResource;
 import no.fint.model.resource.felles.PersonResource;
@@ -12,7 +15,6 @@ import no.fintlabs.kafka.entity.topic.EntityTopicNameParameters;
 import no.fintlabs.links.ResourceLinkUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.listener.CommonLoggingErrorHandler;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
 @Configuration
@@ -34,8 +36,7 @@ public class ResourceEntityConsumersConfiguration {
                 consumerRecord -> cache.put(
                         ResourceLinkUtil.getSelfLinks(consumerRecord.value()),
                         consumerRecord.value()
-                ),
-                new CommonLoggingErrorHandler()
+                )
         ).createContainer(EntityTopicNameParameters.builder().resource(resourceReference).build());
     }
 
@@ -58,17 +59,6 @@ public class ResourceEntityConsumersConfiguration {
                 "arkiv.noark.arkivressurs",
                 ArkivressursResource.class,
                 arkivressursResourceCache
-        );
-    }
-
-    @Bean
-    ConcurrentMessageListenerContainer<String, DokumentTypeResource> dokumentTypeResourceEntityConsumer(
-            FintCache<String, DokumentTypeResource> dokumentTypeResourceCache
-    ) {
-        return createCacheConsumer(
-                "arkiv.kodeverk.dokumenttype",
-                DokumentTypeResource.class,
-                dokumentTypeResourceCache
         );
     }
 

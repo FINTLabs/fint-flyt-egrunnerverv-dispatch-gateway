@@ -32,11 +32,6 @@ public class ResourceEntityCacheConfiguration {
     }
 
     @Bean
-    FintCache<String, DokumentTypeResource> dokumentTypeResourceCache() {
-        return createCache(DokumentTypeResource.class);
-    }
-
-    @Bean
     FintCache<String, TilgangsrestriksjonResource> tilgangsrestriksjonResourceCache() {
         return createCache(TilgangsrestriksjonResource.class);
     }
