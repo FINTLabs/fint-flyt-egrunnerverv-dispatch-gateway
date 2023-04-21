@@ -5,3 +5,4 @@ metadata:
 data:
   fint.org-id: 'vlfk.no'
   fint.flyt.egrunnerverv.base-url: 'https://vigoiks.service-now.com/api/now/table'
+  fint.flyt.egrunnerverv.token-uri: 'https://vigoiks.service-now.com/oauth_token.do'
