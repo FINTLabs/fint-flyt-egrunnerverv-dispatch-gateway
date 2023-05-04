@@ -28,7 +28,7 @@ import java.util.Optional;
 @Configuration
 @Slf4j
 public class InstanceConsumerConfiguration {
-    public static final int EGRUNNERVERV_ID = 2;
+    public static final int EGRUNNERVERV_SOURCE_APPLICATION_ID = 2;
     public static final String EGRUNNERVERV_DATETIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
     @Value("${fint.flyt.egrunnerverv.retentionTimeInDays:30}")
     private Long retentionTimeInDays;
@@ -117,7 +117,7 @@ public class InstanceConsumerConfiguration {
                 instanceFlowConsumerRecord -> {
                     Long sourceApplicationId = instanceFlowConsumerRecord.getInstanceFlowHeaders().getSourceApplicationId();
 
-                    if (sourceApplicationId == EGRUNNERVERV_ID) {
+                    if (sourceApplicationId == EGRUNNERVERV_SOURCE_APPLICATION_ID) {
                         String sourceApplicationInstanceId = instanceFlowConsumerRecord.getInstanceFlowHeaders().getSourceApplicationInstanceId();
                         egrunnervervSimpleInstanceRepository.get(sourceApplicationInstanceId).ifPresent(simpleInstance -> {
                             try {
