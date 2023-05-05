@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: trondelagfk-no
+namespace: trondelagfylke-no
 
 resources:
   - ../../../base2
@@ -9,16 +9,16 @@ patches:
   - patch: |-
       - op: replace
         path: "/metadata/labels/app.kubernetes.io~1instance"
-        value: "fint-flyt-egrunnerverv-dispatch-gateway_trondelagfk-no"
+        value: "fint-flyt-egrunnerverv-dispatch-gateway_trondelagfylke-no"
       - op: replace
         path: "/metadata/labels/fintlabs.no~1org-id"
-        value: "trondelagfk.no"
+        value: "trondelagfylke.no"
       - op: replace
         path: "/spec/kafka/acls/0/topic"
-        value: "trondelagfk-no.flyt.*"
+        value: "trondelagfylke-no.flyt.*"
       - op: replace
         path: "/spec/orgId"
-        value: "trondelagfk.no"
+        value: "trondelagfylke.no"
     target:
       kind: Application
       name: fint-flyt-egrunnerverv-dispatch-gateway
