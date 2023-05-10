@@ -26,6 +26,10 @@ spec:
   env:
     - name: JAVA_TOOL_OPTIONS
       value: '-XX:+ExitOnOutOfMemoryError -Xmx1840M'
+    - name: fint.flyt.egrunnerverv.base-url
+      value: baseUrl
+    - name: fint.flyt.egrunnerverv.token-uri
+      value: tokenUrl
   resources:
     limits:
       memory: "2048Mi"

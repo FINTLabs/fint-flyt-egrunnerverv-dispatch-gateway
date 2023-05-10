@@ -19,6 +19,12 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "trondelagfylke.no"
+      - op: replace
+        path: "/spec/env/1/value"
+        value: "https://vigoiks.service-now.com/api/now/table"
+      - op: replace
+        path: "/spec/env/2/value"
+        value: "https://vigoiks.service-now.com/oauth_token.do"
     target:
       kind: Application
       name: fint-flyt-egrunnerverv-dispatch-gateway

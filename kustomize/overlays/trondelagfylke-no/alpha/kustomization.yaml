@@ -19,6 +19,17 @@ patches:
       - op: replace
         path: "/spec/orgId"
         value: "trondelagfylke.no"
+      - op: replace
+        path: "/spec/env/1/value"
+        value: "https://vigoikstest.service-now.com/api/now/table"
+      - op: replace
+        path: "/spec/env/2/value"
+        value: "https://vigoikstest.service-now.com/oauth_token.do"
+      - op: add
+        path: "/spec/env/-"
+        value:
+          name: "logging.level.no.fintlabs"
+          value: "DEBUG"
     target:
       kind: Application
       name: fint-flyt-egrunnerverv-dispatch-gateway
