@@ -3,6 +3,12 @@ kind: Application
 metadata:
   name: fint-flyt-egrunnerverv-dispatch-gateway
   namespace: fintlabs-no
+  labels:
+    app.kubernetes.io/name: fint-flyt-egrunnerverv-dispatch-gateway
+    app.kubernetes.io/version: latest
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: fint-flyt
+    fintlabs.no/team: flyt
 spec:
   port: 8080
   imagePullPolicy: Always
