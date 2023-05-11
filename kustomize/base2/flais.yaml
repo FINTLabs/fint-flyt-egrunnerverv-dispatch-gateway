@@ -22,6 +22,8 @@ spec:
       value: baseUrl
     - name: fint.flyt.egrunnerverv.token-uri
       value: tokenUrl
+  onePassword:
+    itemPath: path
   resources:
     limits:
       memory: "2048Mi"
