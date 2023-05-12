@@ -31,7 +31,6 @@ patches:
         value:
           name: "logging.level.no.fintlabs"
           value: "DEBUG"
-
     target:
       kind: Application
       name: fint-flyt-egrunnerverv-dispatch-gateway
