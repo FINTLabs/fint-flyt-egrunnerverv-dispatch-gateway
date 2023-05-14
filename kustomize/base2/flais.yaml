@@ -22,7 +22,7 @@ spec:
       - permission: admin
         topic: 'no-permission'
   database:
-    enabled: true
+    database: fint-flyt
   env:
     - name: JAVA_TOOL_OPTIONS
       value: '-XX:+ExitOnOutOfMemoryError -Xmx1840M'
