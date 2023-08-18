@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.9'
+    id 'org.springframework.boot' version '2.7.14'
     id 'io.spring.dependency-management' version '1.1.0'
     id 'java'
     id 'groovy'
@@ -36,8 +36,8 @@ dependencies {
     implementation 'io.netty:netty-resolver-dns-native-macos:4.1.82.Final:osx-aarch_64'
 
     implementation 'org.springframework.kafka:spring-kafka'
-    implementation 'no.fintlabs:fint-kafka:2.3.0'
-    implementation 'no.fintlabs:fint-flyt-kafka:2.2.0'
+    implementation 'no.fintlabs:fint-kafka:2.4.1'
+    implementation 'no.fintlabs:fint-flyt-kafka:2.4.2'
     implementation 'org.jetbrains:annotations:23.0.0'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
