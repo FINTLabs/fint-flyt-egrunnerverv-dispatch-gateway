@@ -12,6 +12,8 @@ spring:
     url: jdbc:postgresql://localhost:5439/fint-flyt-egrunnerverv-dispatch-gateway
     username: postgres
     password: password
+    hikari:
+      schema: fintlabs_no
 
 logging:
   level:

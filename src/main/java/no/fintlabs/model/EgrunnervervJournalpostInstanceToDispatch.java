@@ -2,12 +2,10 @@ package no.fintlabs.model;
 
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
 import lombok.extern.jackson.Jacksonized;
 
 @Getter
 @Builder
-@ToString
 @Jacksonized
 public class EgrunnervervJournalpostInstanceToDispatch {
     private final String journalpostnr;
@@ -22,4 +20,9 @@ public class EgrunnervervJournalpostInstanceToDispatch {
     private final String saksansvarlignavn;
     private final String adminenhetkortnavn;
     private final String adminenhetnavn;
+
+    @Override
+    public String toString() {
+        return "Sensitive data omitted";
+    }
 }
