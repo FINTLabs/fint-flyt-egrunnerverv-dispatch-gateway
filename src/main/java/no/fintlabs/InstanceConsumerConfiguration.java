@@ -73,8 +73,6 @@ public class InstanceConsumerConfiguration {
                     if (sourceApplicationId == EGRUNNERVERV_SOURCE_APPLICATION_ID) {
                         String sourceApplicationInstanceId = instanceFlowConsumerRecord.getInstanceFlowHeaders().getSourceApplicationInstanceId();
 
-                        log.debug(String.valueOf(instanceFlowConsumerRecord.getInstanceFlowHeaders()));
-
                         try {
                             Optional<InstanceToDispatchEntity> instanceToDispatchEntity =
                                     switch (instanceFlowConsumerRecord.getInstanceFlowHeaders().getSourceApplicationIntegrationId()) {
