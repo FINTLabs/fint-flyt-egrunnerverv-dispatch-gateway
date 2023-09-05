@@ -20,11 +20,12 @@ fint:
   application-id: fint-flyt-egrunnerverv-dispatch-gateway
   flyt:
     egrunnerverv:
-      retentionTimeInDays: 30
       username:
       password:
       registrationId: egrunnerverv
       instance-dispatch-interval-cron: "0 0/30 * * * *"
+      tablenameSak: "x_nvas_grunnerverv_grunnerverv"
+      tablenameJournalpost: "x_nvas_grunnerverv_dokumenter"
   cache:
     defaultCacheEntryTimeToLiveMillis: 518400000
     defaultCacheHeapSize: 1000000
