@@ -73,27 +73,28 @@ public class InstanceConsumerConfiguration {
                     if (sourceApplicationId == EGRUNNERVERV_SOURCE_APPLICATION_ID) {
                         String sourceApplicationInstanceId = instanceFlowConsumerRecord.getInstanceFlowHeaders().getSourceApplicationInstanceId();
 
-
                         log.debug(String.valueOf(instanceFlowConsumerRecord.getInstanceFlowHeaders()));
 
-//                        try {
-//                            Optional<InstanceToDispatchEntity> instanceToDispatchEntity =
-//                                    switch (simpleInstance.getType()) {
-//                                        case SAK -> storeSakInstanceToDispatch(
-//                                                tablenameSak,
-//                                                sourceApplicationInstanceId,
-//                                                instanceFlowConsumerRecord.getInstanceFlowHeaders().getArchiveInstanceId()
-//                                        );
-//                                        case JOURNALPOST -> storeJournalpostInstanceToDispatch(
-//                                                tablenameJournalpost,
-//                                                sourceApplicationInstanceId,
-//                                                instanceFlowConsumerRecord.getInstanceFlowHeaders().getArchiveInstanceId()
-//                                        );
-//                                    };
-//                            instanceToDispatchEntity.ifPresent(webClientRequestService::dispatchInstance);
-//                        } catch (JsonProcessingException e) {
-//                            throw new RuntimeException(e);
-//                        }
+                        try {
+                            Optional<InstanceToDispatchEntity> instanceToDispatchEntity =
+                                    switch (instanceFlowConsumerRecord.getInstanceFlowHeaders().getSourceApplicationIntegrationId()) {
+                                        case "sak" -> storeSakInstanceToDispatch(
+                                                tablenameSak,
+                                                sourceApplicationInstanceId,
+                                                instanceFlowConsumerRecord.getInstanceFlowHeaders().getArchiveInstanceId()
+                                        );
+                                        case "journalpost" -> storeJournalpostInstanceToDispatch(
+                                                tablenameJournalpost,
+                                                sourceApplicationInstanceId,
+                                                instanceFlowConsumerRecord.getInstanceFlowHeaders().getArchiveInstanceId()
+                                        );
+                                        default ->
+                                                throw new IllegalStateException("Unexpected value: " + instanceFlowConsumerRecord.getInstanceFlowHeaders().getSourceApplicationIntegrationId());
+                                    };
+                            instanceToDispatchEntity.ifPresent(webClientRequestService::dispatchInstance);
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 },
                 new CommonLoggingErrorHandler(),
