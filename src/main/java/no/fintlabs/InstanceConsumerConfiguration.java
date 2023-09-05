@@ -6,12 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import no.fint.model.resource.arkiv.noark.SakResource;
 import no.fintlabs.flyt.kafka.event.InstanceFlowEventConsumerFactoryService;
 import no.fintlabs.kafka.CaseRequestService;
-import no.fintlabs.kafka.event.EventConsumerFactoryService;
 import no.fintlabs.kafka.event.topic.EventTopicNameParameters;
 import no.fintlabs.kafka.event.topic.EventTopicService;
 import no.fintlabs.model.EgrunnervervJournalpostInstanceToDispatch;
 import no.fintlabs.model.EgrunnervervSakInstanceToDispatch;
-import no.fintlabs.model.EgrunnervervSimpleInstance;
 import no.fintlabs.model.InstanceToDispatchEntity;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +18,6 @@ import org.springframework.kafka.listener.CommonLoggingErrorHandler;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.Duration;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -30,76 +27,32 @@ import java.util.Optional;
 public class InstanceConsumerConfiguration {
     public static final int EGRUNNERVERV_SOURCE_APPLICATION_ID = 2;
     public static final String EGRUNNERVERV_DATETIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
-    @Value("${fint.flyt.egrunnerverv.retentionTimeInDays:30}")
-    private Long retentionTimeInDays;
-
-    private final EgrunnervervSimpleInstanceRepository egrunnervervSimpleInstanceRepository;
     private final InstanceToDispatchEntityRepository instanceToDispatchEntityRepository;
     private final EventTopicService eventTopicService;
-
     private final CaseRequestService caseRequestService;
     private final EgrunnervervJournalpostInstanceToDispatchMappingService journalpostInstanceToDispatchMappingService;
-
     private final WebClientRequestService webClientRequestService;
-
     private final ObjectMapper objectMapper;
+    private final String tablenameSak;
+    private final String tablenameJournalpost;
 
     public InstanceConsumerConfiguration(
-            EgrunnervervSimpleInstanceRepository egrunnervervSimpleInstanceRepository,
             InstanceToDispatchEntityRepository instanceToDispatchEntityRepository,
             EventTopicService eventTopicService,
             CaseRequestService caseRequestService,
             EgrunnervervJournalpostInstanceToDispatchMappingService journalpostInstanceToDispatchMappingService,
-            WebClientRequestService webClientRequestService
+            WebClientRequestService webClientRequestService,
+            @Value("${fint.flyt.egrunnerverv.tablenameSak}") String tablenameSak,
+            @Value("${fint.flyt.egrunnerverv.tablenameJournalpost}") String tablenameJournalpost
     ) {
-        this.egrunnervervSimpleInstanceRepository = egrunnervervSimpleInstanceRepository;
         this.instanceToDispatchEntityRepository = instanceToDispatchEntityRepository;
         this.eventTopicService = eventTopicService;
         this.caseRequestService = caseRequestService;
         this.journalpostInstanceToDispatchMappingService = journalpostInstanceToDispatchMappingService;
         this.webClientRequestService = webClientRequestService;
         this.objectMapper = new ObjectMapper();
-    }
-
-    @Bean
-    public ConcurrentMessageListenerContainer<String, EgrunnervervSimpleInstance> simpleSakReceivedEventConsumer(
-            EventConsumerFactoryService eventConsumerFactoryService
-    ) {
-        EventTopicNameParameters topic = EventTopicNameParameters.builder()
-                .eventName("egrunnerverv-sak-instance")
-                .build();
-
-        eventTopicService.ensureTopic(topic, Duration.ofDays(retentionTimeInDays).toMillis());
-
-        return eventConsumerFactoryService.createFactory(
-                EgrunnervervSimpleInstance.class,
-                consumerRecord -> egrunnervervSimpleInstanceRepository.put(
-                        consumerRecord.value()
-                                .toBuilder()
-                                .type(EgrunnervervSimpleInstance.Type.SAK)
-                                .build()
-                )).createContainer(topic);
-    }
-
-    @Bean
-    public ConcurrentMessageListenerContainer<String, EgrunnervervSimpleInstance> simpleJournalpostReceivedEventConsumer(
-            EventConsumerFactoryService eventConsumerFactoryService
-    ) {
-        EventTopicNameParameters topic = EventTopicNameParameters.builder()
-                .eventName("egrunnerverv-journalpost-instance")
-                .build();
-
-        eventTopicService.ensureTopic(topic, Duration.ofDays(retentionTimeInDays).toMillis());
-
-        return eventConsumerFactoryService.createFactory(
-                EgrunnervervSimpleInstance.class,
-                consumerRecord -> egrunnervervSimpleInstanceRepository.put(
-                        consumerRecord.value()
-                                .toBuilder()
-                                .type(EgrunnervervSimpleInstance.Type.JOURNALPOST)
-                                .build()
-                )
-        ).createContainer(topic);
+        this.tablenameSak = tablenameSak;
+        this.tablenameJournalpost = tablenameJournalpost;
     }
 
     @Bean
@@ -119,27 +72,28 @@ public class InstanceConsumerConfiguration {
 
                     if (sourceApplicationId == EGRUNNERVERV_SOURCE_APPLICATION_ID) {
                         String sourceApplicationInstanceId = instanceFlowConsumerRecord.getInstanceFlowHeaders().getSourceApplicationInstanceId();
-                        egrunnervervSimpleInstanceRepository.get(sourceApplicationInstanceId).ifPresent(simpleInstance -> {
-                            try {
-                                Optional<InstanceToDispatchEntity> instanceToDispatchEntity =
-                                        switch (simpleInstance.getType()) {
-                                            case SAK -> storeSakInstanceToDispatch(
-                                                    simpleInstance.getTableName(),
-                                                    sourceApplicationInstanceId,
-                                                    instanceFlowConsumerRecord.getInstanceFlowHeaders().getArchiveInstanceId()
-                                            );
-                                            case JOURNALPOST -> storeJournalpostInstanceToDispatch(
-                                                    simpleInstance.getTableName(),
-                                                    sourceApplicationInstanceId,
-                                                    instanceFlowConsumerRecord.getInstanceFlowHeaders().getArchiveInstanceId()
-                                            );
-                                        };
-                                instanceToDispatchEntity.ifPresent(webClientRequestService::dispatchInstance);
-                            } catch (JsonProcessingException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
 
+
+                        log.debug(String.valueOf(instanceFlowConsumerRecord.getInstanceFlowHeaders()));
+
+//                        try {
+//                            Optional<InstanceToDispatchEntity> instanceToDispatchEntity =
+//                                    switch (simpleInstance.getType()) {
+//                                        case SAK -> storeSakInstanceToDispatch(
+//                                                tablenameSak,
+//                                                sourceApplicationInstanceId,
+//                                                instanceFlowConsumerRecord.getInstanceFlowHeaders().getArchiveInstanceId()
+//                                        );
+//                                        case JOURNALPOST -> storeJournalpostInstanceToDispatch(
+//                                                tablenameJournalpost,
+//                                                sourceApplicationInstanceId,
+//                                                instanceFlowConsumerRecord.getInstanceFlowHeaders().getArchiveInstanceId()
+//                                        );
+//                                    };
+//                            instanceToDispatchEntity.ifPresent(webClientRequestService::dispatchInstance);
+//                        } catch (JsonProcessingException e) {
+//                            throw new RuntimeException(e);
+//                        }
                     }
                 },
                 new CommonLoggingErrorHandler(),
