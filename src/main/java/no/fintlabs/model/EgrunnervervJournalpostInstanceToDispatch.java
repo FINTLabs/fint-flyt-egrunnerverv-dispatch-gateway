@@ -20,9 +20,4 @@ public class EgrunnervervJournalpostInstanceToDispatch {
     private final String saksansvarlignavn;
     private final String adminenhetkortnavn;
     private final String adminenhetnavn;
-
-    @Override
-    public String toString() {
-        return "Sensitive data omitted";
-    }
 }
