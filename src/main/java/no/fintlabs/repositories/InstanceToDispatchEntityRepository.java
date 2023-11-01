@@ -1,4 +1,4 @@
-package no.fintlabs;
+package no.fintlabs.repositories;
 
 import no.fintlabs.model.InstanceToDispatchEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

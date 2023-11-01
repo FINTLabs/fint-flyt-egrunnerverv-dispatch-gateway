@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static no.fintlabs.InstanceConsumerConfiguration.EGRUNNERVERV_DATETIME_FORMAT;
+import static no.fintlabs.PrepareInstanceToDispatchService.EGRUNNERVERV_DATETIME_FORMAT;
 import static no.fintlabs.links.ResourceLinkUtil.getOptionalFirstLink;
 
 @Service
