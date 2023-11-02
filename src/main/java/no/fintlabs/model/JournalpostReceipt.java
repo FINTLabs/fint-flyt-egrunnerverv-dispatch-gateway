@@ -7,7 +7,7 @@ import lombok.extern.jackson.Jacksonized;
 @Getter
 @Builder
 @Jacksonized
-public class EgrunnervervJournalpostInstanceToDispatch {
+public class JournalpostReceipt {
     private final String journalpostnr;
     private final String tittel;
     private final String statusId;

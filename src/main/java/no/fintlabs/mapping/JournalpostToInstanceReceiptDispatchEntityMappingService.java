@@ -1,4 +1,4 @@
-package no.fintlabs;
+package no.fintlabs.mapping;
 
 import no.fint.model.felles.basisklasser.Begrep;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
@@ -7,7 +7,7 @@ import no.fint.model.resource.arkiv.kodeverk.*;
 import no.fint.model.resource.arkiv.noark.*;
 import no.fint.model.resource.felles.PersonResource;
 import no.fintlabs.cache.FintCache;
-import no.fintlabs.model.EgrunnervervJournalpostInstanceToDispatch;
+import no.fintlabs.model.JournalpostReceipt;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
@@ -17,11 +17,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static no.fintlabs.PrepareInstanceToDispatchService.EGRUNNERVERV_DATETIME_FORMAT;
 import static no.fintlabs.links.ResourceLinkUtil.getOptionalFirstLink;
+import static no.fintlabs.mapping.InstanceHeadersEntityToInstanceReceiptDispatchEntityMappingService.EGRUNNERVERV_DATETIME_FORMAT;
 
 @Service
-public class EgrunnervervJournalpostInstanceToDispatchMappingService {
+public class JournalpostToInstanceReceiptDispatchEntityMappingService {
 
     private final FintCache<String, AdministrativEnhetResource> administrativEnhetResourceCache;
     private final FintCache<String, ArkivressursResource> arkivressursResourceCache;
@@ -32,7 +32,7 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
     private final FintCache<String, PersonalressursResource> personalressursResourceCache;
     private final FintCache<String, PersonResource> personResourceCache;
 
-    public EgrunnervervJournalpostInstanceToDispatchMappingService(
+    public JournalpostToInstanceReceiptDispatchEntityMappingService(
             FintCache<String, AdministrativEnhetResource> administrativEnhetResourceCache,
             FintCache<String, ArkivressursResource> arkivressursResourceCache,
             FintCache<String, JournalStatusResource> journalStatusResourceCache,
@@ -53,7 +53,7 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
     }
 
 
-    public EgrunnervervJournalpostInstanceToDispatch map(SakResource sakResource, Long journalpostNummer) {
+    public JournalpostReceipt map(SakResource sakResource, Long journalpostNummer) {
 
         Optional<PersonalressursResource> saksansvarligPersonalressursResource =
                 getOptionalFirstLink(sakResource::getSaksansvarlig)
@@ -94,8 +94,8 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
                 getOptionalFirstLink(skjermingResource::getSkjermingshjemmel)
                         .flatMap(skjermingshjemmelResourceCache::getOptional);
 
-        EgrunnervervJournalpostInstanceToDispatch.EgrunnervervJournalpostInstanceToDispatchBuilder builder =
-                EgrunnervervJournalpostInstanceToDispatch
+        JournalpostReceipt.JournalpostReceiptBuilder builder =
+                JournalpostReceipt
                         .builder()
                         .journalpostnr(
                                 sakResource.getMappeId().getIdentifikatorverdi() +

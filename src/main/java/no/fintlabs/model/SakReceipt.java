@@ -9,7 +9,7 @@ import lombok.extern.jackson.Jacksonized;
 @Builder
 @ToString
 @Jacksonized
-public class EgrunnervervSakInstanceToDispatch {
+public class SakReceipt {
     private final String arkivnummer;
     private final String opprettelse_i_elements_fullfort;
 }

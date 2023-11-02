@@ -2,6 +2,7 @@ package no.fintlabs.model;
 
 import lombok.*;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -11,9 +12,11 @@ import javax.persistence.Id;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PrepareInstanceToDispatchEntity {
+public class InstanceReceiptDispatchEntity {
     @Id
     private String sourceApplicationInstanceId;
-    private String sourceApplicationIntegrationId;
-    private String archiveInstanceId;
+    private String uri;
+    private Class<?> classType;
+    @Column(columnDefinition = "TEXT")
+    private String instanceReceipt;
 }
