@@ -23,7 +23,8 @@ fint:
       username:
       password:
       registrationId: egrunnerverv
-      instance-dispatch-interval-cron: "0 0/30 * * * *"
+      instance-dispatch-initial-delay: 120000
+      instance-dispatch-fixed-delay: 300000
       tablenameSak: "x_nvas_grunnerverv_grunnerverv"
       tablenameJournalpost: "x_nvas_grunnerverv_dokumenter"
   cache:

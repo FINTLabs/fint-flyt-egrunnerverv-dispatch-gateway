@@ -51,13 +51,16 @@ public class PrepareInstanceToDispatchService {
         this.prepareInstanceToDispatchRepository = prepareInstanceToDispatchRepository;
     }
 
-    @Scheduled(cron = "${fint.flyt.egrunnerverv.instance-dispatch-interval-cron}")
-    private void prepareInstancesToDispatch() {
+    @Scheduled(
+            initialDelayString = "${fint.flyt.egrunnerverv.instance-dispatch-initial-delay}",
+            fixedDelayString = "${fint.flyt.egrunnerverv.instance-dispatch-fixed-delay}"
+    )
+    private synchronized void prepareInstancesToDispatch() {
         prepareInstanceToDispatchRepository.findAll()
                 .forEach(this::prepareInstanceToDispatch);
     }
 
-    public void prepareInstanceToDispatch(PrepareInstanceToDispatchEntity prepareInstanceToDispatchEntity) {
+    public synchronized void prepareInstanceToDispatch(PrepareInstanceToDispatchEntity prepareInstanceToDispatchEntity) {
         try {
             Optional<InstanceToDispatchEntity> instanceToDispatchEntity =
                     switch (prepareInstanceToDispatchEntity.getSourceApplicationIntegrationId()) {

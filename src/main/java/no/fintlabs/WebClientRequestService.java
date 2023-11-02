@@ -25,7 +25,10 @@ public class WebClientRequestService {
         this.webClient = webClient;
     }
 
-    @Scheduled(cron = "${fint.flyt.egrunnerverv.instance-dispatch-interval-cron}")
+    @Scheduled(
+            initialDelayString = "${fint.flyt.egrunnerverv.instance-dispatch-initial-delay}",
+            fixedDelayString = "${fint.flyt.egrunnerverv.instance-dispatch-fixed-delay}"
+    )
     private synchronized void dispatchInstances() {
         instanceToDispatchEntityRepository.findAll()
                 .forEach(this::dispatchInstance);
