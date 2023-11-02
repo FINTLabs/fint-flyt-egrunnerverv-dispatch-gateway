@@ -26,12 +26,12 @@ public class WebClientRequestService {
     }
 
     @Scheduled(cron = "${fint.flyt.egrunnerverv.instance-dispatch-interval-cron}")
-    private void dispatchInstances() {
+    private synchronized void dispatchInstances() {
         instanceToDispatchEntityRepository.findAll()
                 .forEach(this::dispatchInstance);
     }
 
-    public void dispatchInstance(InstanceToDispatchEntity instanceToDispatchEntity) {
+    public synchronized void dispatchInstance(InstanceToDispatchEntity instanceToDispatchEntity) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             Object instanceToDispatch;
