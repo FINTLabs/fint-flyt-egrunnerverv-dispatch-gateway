@@ -1,9 +1,12 @@
-package no.fintlabs.mapping;
+package no.fintlabs.converting;
 
 import no.fint.model.felles.basisklasser.Begrep;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
-import no.fint.model.resource.arkiv.kodeverk.*;
+import no.fint.model.resource.arkiv.kodeverk.JournalStatusResource;
+import no.fint.model.resource.arkiv.kodeverk.JournalpostTypeResource;
+import no.fint.model.resource.arkiv.kodeverk.SkjermingshjemmelResource;
+import no.fint.model.resource.arkiv.kodeverk.TilgangsrestriksjonResource;
 import no.fint.model.resource.arkiv.noark.*;
 import no.fint.model.resource.felles.PersonResource;
 import no.fintlabs.cache.FintCache;
@@ -17,11 +20,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static no.fintlabs.converting.InstanceHeadersEntityToInstanceReceiptDispatchEntityConvertingService.EGRUNNERVERV_DATETIME_FORMAT;
 import static no.fintlabs.links.ResourceLinkUtil.getOptionalFirstLink;
-import static no.fintlabs.mapping.InstanceHeadersEntityToInstanceReceiptDispatchEntityMappingService.EGRUNNERVERV_DATETIME_FORMAT;
 
 @Service
-public class JournalpostToInstanceReceiptDispatchEntityMappingService {
+public class JournalpostToInstanceReceiptDispatchEntityConvertingService {
 
     private final FintCache<String, AdministrativEnhetResource> administrativEnhetResourceCache;
     private final FintCache<String, ArkivressursResource> arkivressursResourceCache;
@@ -32,7 +35,7 @@ public class JournalpostToInstanceReceiptDispatchEntityMappingService {
     private final FintCache<String, PersonalressursResource> personalressursResourceCache;
     private final FintCache<String, PersonResource> personResourceCache;
 
-    public JournalpostToInstanceReceiptDispatchEntityMappingService(
+    public JournalpostToInstanceReceiptDispatchEntityConvertingService(
             FintCache<String, AdministrativEnhetResource> administrativEnhetResourceCache,
             FintCache<String, ArkivressursResource> arkivressursResourceCache,
             FintCache<String, JournalStatusResource> journalStatusResourceCache,
@@ -70,7 +73,9 @@ public class JournalpostToInstanceReceiptDispatchEntityMappingService {
                 .stream()
                 .filter(journalpost -> Objects.equals(journalpost.getJournalPostnummer(), journalpostNummer))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No journalpost with journalpostNummer=" + journalpostNummer));
+                .orElseThrow(
+                        () -> new IllegalArgumentException("No journalpost with journalpostNummer=" + journalpostNummer)
+                );
 
         Optional<AdministrativEnhetResource> administrativEnhetResource =
                 getOptionalFirstLink(journalpostResource::getAdministrativEnhet)

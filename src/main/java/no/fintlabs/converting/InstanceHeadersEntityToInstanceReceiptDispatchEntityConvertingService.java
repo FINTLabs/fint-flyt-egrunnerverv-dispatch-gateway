@@ -1,4 +1,4 @@
-package no.fintlabs.mapping;
+package no.fintlabs.converting;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,37 +16,43 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Service
-public class InstanceHeadersEntityToInstanceReceiptDispatchEntityMappingService {
+public class InstanceHeadersEntityToInstanceReceiptDispatchEntityConvertingService {
 
     private final String tablenameSak;
     private final String tablenameJournalpost;
     private final CaseRequestService caseRequestService;
     private final ObjectMapper objectMapper;
-    private final JournalpostToInstanceReceiptDispatchEntityMappingService journalpostToInstanceReceiptDispatchEntityMappingService;
+    private final JournalpostToInstanceReceiptDispatchEntityConvertingService journalpostToInstanceReceiptDispatchEntityConvertingService;
 
     public static final String EGRUNNERVERV_DATETIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
 
 
-    public InstanceHeadersEntityToInstanceReceiptDispatchEntityMappingService(
+    public InstanceHeadersEntityToInstanceReceiptDispatchEntityConvertingService(
             @Value("${fint.flyt.egrunnerverv.tablenameSak}") String tablenameSak,
             @Value("${fint.flyt.egrunnerverv.tablenameJournalpost}") String tablenameJournalpost,
-            CaseRequestService caseRequestService, ObjectMapper objectMapper, JournalpostToInstanceReceiptDispatchEntityMappingService journalpostToInstanceReceiptDispatchEntityMappingService) {
+            CaseRequestService caseRequestService,
+            ObjectMapper objectMapper,
+            JournalpostToInstanceReceiptDispatchEntityConvertingService journalpostToInstanceReceiptDispatchEntityConvertingService
+    ) {
         this.tablenameSak = tablenameSak;
         this.tablenameJournalpost = tablenameJournalpost;
         this.caseRequestService = caseRequestService;
         this.objectMapper = objectMapper;
-        this.journalpostToInstanceReceiptDispatchEntityMappingService = journalpostToInstanceReceiptDispatchEntityMappingService;
+        this.journalpostToInstanceReceiptDispatchEntityConvertingService =
+                journalpostToInstanceReceiptDispatchEntityConvertingService;
     }
 
-    public Optional<InstanceReceiptDispatchEntity> map(InstanceHeadersEntity instanceHeadersEntity) {
+    public Optional<InstanceReceiptDispatchEntity> convert(InstanceHeadersEntity instanceHeadersEntity) {
         return switch (instanceHeadersEntity.getSourceApplicationIntegrationId()) {
-            case "sak" -> mapSak(instanceHeadersEntity);
-            case "journalpost" -> mapJournalpost(instanceHeadersEntity);
-            default ->
-                    throw new IllegalStateException("Unexpected value: " + instanceHeadersEntity.getSourceApplicationIntegrationId());
+            case "sak" -> convertSak(instanceHeadersEntity);
+            case "journalpost" -> convertJournalpost(instanceHeadersEntity);
+            default -> throw new IllegalStateException(
+                    "Unexpected value: " + instanceHeadersEntity.getSourceApplicationIntegrationId()
+            );
         };
     }
-    private Optional<InstanceReceiptDispatchEntity> mapSak(InstanceHeadersEntity instanceHeadersEntity) {
+
+    private Optional<InstanceReceiptDispatchEntity> convertSak(InstanceHeadersEntity instanceHeadersEntity) {
 
         String archiveInstanceId = instanceHeadersEntity.getArchiveInstanceId();
         String sourceApplicationInstanceId = instanceHeadersEntity.getSourceApplicationInstanceId();
@@ -88,7 +94,7 @@ public class InstanceHeadersEntityToInstanceReceiptDispatchEntityMappingService 
                 });
     }
 
-    private Optional<InstanceReceiptDispatchEntity> mapJournalpost(InstanceHeadersEntity instanceHeadersEntity) {
+    private Optional<InstanceReceiptDispatchEntity> convertJournalpost(InstanceHeadersEntity instanceHeadersEntity) {
 
         String sourceApplicationInstanceId = instanceHeadersEntity.getSourceApplicationInstanceId();
 
@@ -102,7 +108,8 @@ public class InstanceHeadersEntityToInstanceReceiptDispatchEntityMappingService 
         return caseRequestService.getByMappeId(caseId)
                 .map(sakResource -> {
                     JournalpostReceipt journalpostReceipt =
-                            journalpostToInstanceReceiptDispatchEntityMappingService.map(sakResource, journalpostNummer);
+                            journalpostToInstanceReceiptDispatchEntityConvertingService
+                                    .map(sakResource, journalpostNummer);
 
                     String uri = UriComponentsBuilder.newInstance()
                             .pathSegment(
@@ -113,7 +120,7 @@ public class InstanceHeadersEntityToInstanceReceiptDispatchEntityMappingService 
                             .queryParam("sysparm_query_no_domain", "true")
                             .toUriString();
 
-                    InstanceReceiptDispatchEntity instanceReceiptDispatchEntity = null;
+                    InstanceReceiptDispatchEntity instanceReceiptDispatchEntity;
                     try {
                         instanceReceiptDispatchEntity = InstanceReceiptDispatchEntity.builder()
                                 .sourceApplicationInstanceId(sourceApplicationInstanceId)

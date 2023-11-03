@@ -26,7 +26,8 @@ public class InstanceConsumerConfiguration {
     }
 
     @Bean
-    public ConcurrentMessageListenerContainer<String, InstanceReceiptDispatchEntity> prepareInstanceToDispatchEventConsumer(
+    public ConcurrentMessageListenerContainer<String, InstanceReceiptDispatchEntity>
+    prepareInstanceToDispatchEventConsumer(
             InstanceFlowEventConsumerFactoryService instanceFlowEventConsumerFactoryService
     ) {
         EventTopicNameParameters topic = EventTopicNameParameters.builder()
@@ -37,7 +38,9 @@ public class InstanceConsumerConfiguration {
 
         return instanceFlowEventConsumerFactoryService.createRecordFactory(
                 InstanceReceiptDispatchEntity.class,
-                instanceFlowConsumerRecord -> dispatchService.a(instanceFlowConsumerRecord.getInstanceFlowHeaders())
+                instanceFlowConsumerRecord -> dispatchService.handleNewInstance(
+                        instanceFlowConsumerRecord.getInstanceFlowHeaders()
+                )
         ).createContainer(topic);
     }
 
