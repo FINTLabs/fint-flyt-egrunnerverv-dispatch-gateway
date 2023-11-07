@@ -31,7 +31,7 @@ public class ResourceEntityConsumersConfiguration {
             Class<T> resourceClass,
             FintCache<String, T> cache
     ) {
-        return entityConsumerFactoryService.createFactory(
+        return entityConsumerFactoryService.createRecordConsumerFactory(
                 resourceClass,
                 consumerRecord -> cache.put(
                         ResourceLinkUtil.getSelfLinks(consumerRecord.value()),

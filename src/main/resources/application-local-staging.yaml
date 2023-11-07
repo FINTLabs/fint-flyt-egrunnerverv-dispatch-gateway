@@ -5,6 +5,7 @@ fint:
   flyt:
     egrunnerverv:
       base-url: https://vigoikstest.service-now.com/api/now/table
+      token-uri: https://vigoikstest.service-now.com/oauth_token.do
 spring:
   kafka:
     bootstrap-servers: localhost:9092

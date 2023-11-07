@@ -1,13 +1,16 @@
-package no.fintlabs;
+package no.fintlabs.converting;
 
 import no.fint.model.felles.basisklasser.Begrep;
 import no.fint.model.felles.kompleksedatatyper.Identifikator;
 import no.fint.model.resource.administrasjon.personal.PersonalressursResource;
-import no.fint.model.resource.arkiv.kodeverk.*;
+import no.fint.model.resource.arkiv.kodeverk.JournalStatusResource;
+import no.fint.model.resource.arkiv.kodeverk.JournalpostTypeResource;
+import no.fint.model.resource.arkiv.kodeverk.SkjermingshjemmelResource;
+import no.fint.model.resource.arkiv.kodeverk.TilgangsrestriksjonResource;
 import no.fint.model.resource.arkiv.noark.*;
 import no.fint.model.resource.felles.PersonResource;
 import no.fintlabs.cache.FintCache;
-import no.fintlabs.model.EgrunnervervJournalpostInstanceToDispatch;
+import no.fintlabs.model.JournalpostReceipt;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
@@ -17,11 +20,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static no.fintlabs.InstanceConsumerConfiguration.EGRUNNERVERV_DATETIME_FORMAT;
+import static no.fintlabs.converting.InstanceHeadersEntityToInstanceReceiptDispatchEntityConvertingService.EGRUNNERVERV_DATETIME_FORMAT;
 import static no.fintlabs.links.ResourceLinkUtil.getOptionalFirstLink;
 
 @Service
-public class EgrunnervervJournalpostInstanceToDispatchMappingService {
+public class JournalpostToInstanceReceiptDispatchEntityConvertingService {
 
     private final FintCache<String, AdministrativEnhetResource> administrativEnhetResourceCache;
     private final FintCache<String, ArkivressursResource> arkivressursResourceCache;
@@ -32,7 +35,7 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
     private final FintCache<String, PersonalressursResource> personalressursResourceCache;
     private final FintCache<String, PersonResource> personResourceCache;
 
-    public EgrunnervervJournalpostInstanceToDispatchMappingService(
+    public JournalpostToInstanceReceiptDispatchEntityConvertingService(
             FintCache<String, AdministrativEnhetResource> administrativEnhetResourceCache,
             FintCache<String, ArkivressursResource> arkivressursResourceCache,
             FintCache<String, JournalStatusResource> journalStatusResourceCache,
@@ -53,7 +56,7 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
     }
 
 
-    public EgrunnervervJournalpostInstanceToDispatch map(SakResource sakResource, Long journalpostNummer) {
+    public JournalpostReceipt map(SakResource sakResource, Long journalpostNummer) {
 
         Optional<PersonalressursResource> saksansvarligPersonalressursResource =
                 getOptionalFirstLink(sakResource::getSaksansvarlig)
@@ -70,7 +73,9 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
                 .stream()
                 .filter(journalpost -> Objects.equals(journalpost.getJournalPostnummer(), journalpostNummer))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No journalpost with journalpostNummer=" + journalpostNummer));
+                .orElseThrow(
+                        () -> new IllegalArgumentException("No journalpost with journalpostNummer=" + journalpostNummer)
+                );
 
         Optional<AdministrativEnhetResource> administrativEnhetResource =
                 getOptionalFirstLink(journalpostResource::getAdministrativEnhet)
@@ -94,8 +99,8 @@ public class EgrunnervervJournalpostInstanceToDispatchMappingService {
                 getOptionalFirstLink(skjermingResource::getSkjermingshjemmel)
                         .flatMap(skjermingshjemmelResourceCache::getOptional);
 
-        EgrunnervervJournalpostInstanceToDispatch.EgrunnervervJournalpostInstanceToDispatchBuilder builder =
-                EgrunnervervJournalpostInstanceToDispatch
+        JournalpostReceipt.JournalpostReceiptBuilder builder =
+                JournalpostReceipt
                         .builder()
                         .journalpostnr(
                                 sakResource.getMappeId().getIdentifikatorverdi() +
