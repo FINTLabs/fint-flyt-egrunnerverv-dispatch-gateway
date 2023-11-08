@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -67,15 +68,24 @@ public class DispatchService {
             fixedDelayString = "${fint.flyt.egrunnerverv.instance-dispatch-fixed-delay}"
     )
     private synchronized void dispatchAll() {
-        log.info("Converting and transferring all instance header entities to instance receipt dispatch entities");
-        instanceHeadersRepository.findAll().forEach(
-                this::convertAndTransferToInstanceReceiptDispatch
-        );
 
-        log.info("Dispatching all instance receipt dispatch entities");
-        instanceReceiptDispatchRepository.findAll().forEach(
-                this::dispatchInstanceReceipt
-        );
+        List<InstanceHeadersEntity> instanceHeadersEntities = instanceHeadersRepository.findAll();
+
+        if (!instanceHeadersEntities.isEmpty()) {
+            log.info("Converting and transferring all instance header entities to instance receipt dispatch entities");
+            instanceHeadersRepository.findAll().forEach(
+                    this::convertAndTransferToInstanceReceiptDispatch
+            );
+        }
+
+        List<InstanceReceiptDispatchEntity> instanceReceipts = instanceReceiptDispatchRepository.findAll();
+
+        if (!instanceReceipts.isEmpty()) {
+            log.info("Dispatching all instance receipt dispatch entities");
+            instanceReceipts.forEach(
+                    this::dispatchInstanceReceipt
+            );
+        }
     }
 
     private InstanceHeadersEntity saveInstanceHeaders(InstanceFlowHeaders instanceFlowHeaders) {
