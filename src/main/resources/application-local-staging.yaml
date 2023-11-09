@@ -6,6 +6,8 @@ fint:
     egrunnerverv:
       base-url: https://vigoikstest.service-now.com/api/now/table
       token-uri: https://vigoikstest.service-now.com/oauth_token.do
+      instance-dispatch-initial-delay: 20000
+      instance-dispatch-fixed-delay: 10000
 spring:
   kafka:
     bootstrap-servers: localhost:9092

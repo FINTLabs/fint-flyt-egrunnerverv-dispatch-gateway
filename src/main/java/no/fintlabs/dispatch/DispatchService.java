@@ -68,20 +68,17 @@ public class DispatchService {
             fixedDelayString = "${fint.flyt.egrunnerverv.instance-dispatch-fixed-delay}"
     )
     private synchronized void dispatchAll() {
-
-        List<InstanceHeadersEntity> instanceHeadersEntities = instanceHeadersRepository.findAll();
-
-        if (!instanceHeadersEntities.isEmpty()) {
-            log.info("Converting and transferring all instance header entities to instance receipt dispatch entities");
-            instanceHeadersRepository.findAll().forEach(
+        List<InstanceHeadersEntity> instanceHeaders = instanceHeadersRepository.findAll();
+        if (!instanceHeaders.isEmpty()) {
+            log.info("Converting and transferring " + instanceHeaders.size() + " instance header entities to instance receipt dispatch entities");
+            instanceHeaders.forEach(
                     this::convertAndTransferToInstanceReceiptDispatch
             );
         }
 
         List<InstanceReceiptDispatchEntity> instanceReceipts = instanceReceiptDispatchRepository.findAll();
-
         if (!instanceReceipts.isEmpty()) {
-            log.info("Dispatching all instance receipt dispatch entities");
+            log.info("Dispatching " + instanceReceipts.size() + " instance receipt dispatch entities");
             instanceReceipts.forEach(
                     this::dispatchInstanceReceipt
             );
