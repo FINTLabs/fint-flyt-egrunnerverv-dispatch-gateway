@@ -62,12 +62,15 @@ public class InstanceHeadersEntityToInstanceReceiptDispatchEntityConvertingServi
                     SakReceipt sakReceipt = SakReceipt.builder()
                             .arkivnummer(archiveInstanceId)
                             .opprettelse_i_elements_fullfort(
-                                    sakResource
-                                            .getOpprettetDato()
+                                    Optional.ofNullable(
+                                            sakResource
+                                                    .getOpprettetDato()
+                                    ).map(opprettetDato -> opprettetDato
                                             .toInstant()
                                             .atZone(ZoneId.systemDefault())
                                             .toLocalDateTime()
                                             .format(DateTimeFormatter.ofPattern(EGRUNNERVERV_DATETIME_FORMAT))
+                                    ).orElse(null)
                             )
                             .build();
 
