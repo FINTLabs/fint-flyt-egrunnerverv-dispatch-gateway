@@ -109,12 +109,14 @@ public class JournalpostToInstanceReceiptDispatchEntityConvertingService {
                         )
                         .tittel(journalpostResource.getTittel())
                         .dokumentdato(
-                                journalpostResource
-                                        .getOpprettetDato()
+                                Optional.ofNullable(
+                                        journalpostResource.getOpprettetDato()
+                                ).map(opprettetDato -> opprettetDato
                                         .toInstant()
                                         .atZone(ZoneId.systemDefault())
                                         .toLocalDateTime()
                                         .format(DateTimeFormatter.ofPattern(EGRUNNERVERV_DATETIME_FORMAT))
+                                ).orElse(null)
                         );
 
         journalStatusResource
