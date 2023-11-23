@@ -89,14 +89,14 @@ public class JournalpostToInstanceReceiptDispatchEntityConvertingService {
                 getOptionalFirstLink(journalpostResource::getJournalposttype)
                         .flatMap(journalpostTypeResourceCache::getOptional);
 
-        SkjermingResource skjermingResource = journalpostResource.getSkjerming();
+        Optional<SkjermingResource> skjermingResource = Optional.ofNullable(journalpostResource.getSkjerming());
 
         Optional<TilgangsrestriksjonResource> tilgangsrestriksjonResource =
-                getOptionalFirstLink(skjermingResource::getTilgangsrestriksjon)
+                skjermingResource.flatMap(sr -> getOptionalFirstLink(sr::getTilgangsrestriksjon))
                         .flatMap(tilgangsrestriksjonResourceCache::getOptional);
 
         Optional<SkjermingshjemmelResource> skjermingshjemmelResource =
-                getOptionalFirstLink(skjermingResource::getSkjermingshjemmel)
+                skjermingResource.flatMap(sr -> getOptionalFirstLink(sr::getSkjermingshjemmel))
                         .flatMap(skjermingshjemmelResourceCache::getOptional);
 
         JournalpostReceipt.JournalpostReceiptBuilder builder =
@@ -109,12 +109,14 @@ public class JournalpostToInstanceReceiptDispatchEntityConvertingService {
                         )
                         .tittel(journalpostResource.getTittel())
                         .dokumentdato(
-                                journalpostResource
-                                        .getOpprettetDato()
+                                Optional.ofNullable(
+                                        journalpostResource.getOpprettetDato()
+                                ).map(opprettetDato -> opprettetDato
                                         .toInstant()
                                         .atZone(ZoneId.systemDefault())
                                         .toLocalDateTime()
                                         .format(DateTimeFormatter.ofPattern(EGRUNNERVERV_DATETIME_FORMAT))
+                                ).orElse(null)
                         );
 
         journalStatusResource
