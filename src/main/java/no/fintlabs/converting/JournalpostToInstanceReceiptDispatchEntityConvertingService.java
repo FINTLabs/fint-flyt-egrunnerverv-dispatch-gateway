@@ -89,14 +89,14 @@ public class JournalpostToInstanceReceiptDispatchEntityConvertingService {
                 getOptionalFirstLink(journalpostResource::getJournalposttype)
                         .flatMap(journalpostTypeResourceCache::getOptional);
 
-        SkjermingResource skjermingResource = journalpostResource.getSkjerming();
+        Optional<SkjermingResource> skjermingResource = Optional.ofNullable(journalpostResource.getSkjerming());
 
         Optional<TilgangsrestriksjonResource> tilgangsrestriksjonResource =
-                getOptionalFirstLink(skjermingResource::getTilgangsrestriksjon)
+                skjermingResource.flatMap(sr -> getOptionalFirstLink(sr::getTilgangsrestriksjon))
                         .flatMap(tilgangsrestriksjonResourceCache::getOptional);
 
         Optional<SkjermingshjemmelResource> skjermingshjemmelResource =
-                getOptionalFirstLink(skjermingResource::getSkjermingshjemmel)
+                skjermingResource.flatMap(sr -> getOptionalFirstLink(sr::getSkjermingshjemmel))
                         .flatMap(skjermingshjemmelResourceCache::getOptional);
 
         JournalpostReceipt.JournalpostReceiptBuilder builder =
