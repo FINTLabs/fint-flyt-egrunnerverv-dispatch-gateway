@@ -1,22 +1,22 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: innlandetfylke-no
+namespace: afk-no
 
 resources:
   - ../../../base
 
 commonLabels:
-  app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_innlandetfylke_no
-  fintlabs.no/org-id: innlandetfylke.no
+  app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_afk_no
+  fintlabs.no/org-id: afk.no
 
 patches:
   - patch: |-
       - op: replace
         path: "/spec/kafka/acls/0/topic"
-        value: "innlandetfylke-no.flyt.*"
+        value: "afk-no.flyt.*"
       - op: replace
         path: "/spec/orgId"
-        value: "innlandetfylke.no"
+        value: "afk.no"
       - op: replace
         path: "/spec/env/1/value"
         value: "https://vigoikstest.service-now.com/api/now/table"
@@ -25,7 +25,7 @@ patches:
         value: "https://vigoikstest.service-now.com/oauth_token.do"
       - op: replace
         path: "/spec/onePassword/itemPath"
-        value: "vaults/aks-alpha-vault/items/fint-flyt-egrunnerverv-dispatch-gateway-out"
+        value: "vaults/aks-beta-vault/items/fint-flyt-egrunnerverv-dispatch-gateway-out"
       - op: add
         path: "/spec/env/-"
         value:

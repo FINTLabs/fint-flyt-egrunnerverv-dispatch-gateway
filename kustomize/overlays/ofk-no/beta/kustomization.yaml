@@ -1,22 +1,22 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: trondelagfylke-no
+namespace: ofk-no
 
 resources:
   - ../../../base
 
 commonLabels:
-  app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_trondelagfylke_no
-  fintlabs.no/org-id: trondelagfylke.no
+  app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_ofk_no
+  fintlabs.no/org-id: ofk.no
 
 patches:
   - patch: |-
       - op: replace
         path: "/spec/kafka/acls/0/topic"
-        value: "trondelagfylke-no.flyt.*"
+        value: "ofk-no.flyt.*"
       - op: replace
         path: "/spec/orgId"
-        value: "trondelagfylke.no"
+        value: "ofk.no"
       - op: replace
         path: "/spec/env/1/value"
         value: "https://vigoikstest.service-now.com/api/now/table"
@@ -25,7 +25,7 @@ patches:
         value: "https://vigoikstest.service-now.com/oauth_token.do"
       - op: replace
         path: "/spec/onePassword/itemPath"
-        value: "vaults/aks-alpha-vault/items/fint-flyt-egrunnerverv-dispatch-gateway-out"
+        value: "vaults/aks-beta-vault/items/fint-flyt-egrunnerverv-dispatch-gateway-out"
       - op: add
         path: "/spec/env/-"
         value:
