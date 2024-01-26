@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: tromsfylke-no
+
+resources:
+  - ../../../base
+
+commonLabels:
+  app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_tromsfylke_no
+  fintlabs.no/org-id: tromsfylke.no
+
+patches:
+  - patch: |-
+      - op: replace
+        path: "/spec/kafka/acls/0/topic"
+        value: "tromsfylke-no.flyt.*"
+      - op: replace
+        path: "/spec/orgId"
+        value: "tromsfylke.no"
+      - op: replace
+        path: "/spec/env/1/value"
+        value: "https://vigoikstest.service-now.com/api/now/table"
+      - op: replace
+        path: "/spec/env/2/value"
+        value: "https://vigoikstest.service-now.com/oauth_token.do"
+      - op: replace
+        path: "/spec/onePassword/itemPath"
+        value: "vaults/aks-beta-vault/items/fint-flyt-egrunnerverv-dispatch-gateway-out"
+    target:
+      kind: Application
+      name: fint-flyt-egrunnerverv-dispatch-gateway
+
