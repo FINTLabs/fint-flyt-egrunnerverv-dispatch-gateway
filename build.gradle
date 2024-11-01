@@ -43,7 +43,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'org.postgresql:postgresql'
 
-    implementation 'no.fintlabs:fint-flyt-cache:1.2.3'
+    implementation 'no.fintlabs:fint-flyt-cache:1.2.4'
 
     implementation 'org.flywaydb:flyway-core'
 
