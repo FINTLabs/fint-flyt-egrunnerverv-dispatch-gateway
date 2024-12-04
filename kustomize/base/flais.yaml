@@ -25,7 +25,7 @@ spec:
     database: fint-flyt
   env:
     - name: JAVA_TOOL_OPTIONS
-      value: '-XX:+ExitOnOutOfMemoryError -Xmx1840M'
+      value: '-XX:+ExitOnOutOfMemoryError -Xmx800M'
     - name: fint.flyt.egrunnerverv.base-url
       value: baseUrl
     - name: fint.flyt.egrunnerverv.token-uri
@@ -34,10 +34,10 @@ spec:
     itemPath: path
   resources:
     limits:
-      memory: "2048Mi"
-      cpu: "1"
+      memory: "850Mi"
+      cpu: "500m"
     requests:
-      memory: "512Mi"
+      memory: "700Mi"
       cpu: "100m"
   restartPolicy: Always
   replicas: 1
