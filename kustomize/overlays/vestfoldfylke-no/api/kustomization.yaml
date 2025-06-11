@@ -5,9 +5,10 @@ namespace: vestfoldfylke-no
 resources:
   - ../../../base
 
-commonLabels:
-  app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_vestfoldfylke_no
-  fintlabs.no/org-id: vestfoldfylke.no
+labels:
+  - pairs:
+      app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_vestfoldfylke_no
+      fintlabs.no/org-id: vestfoldfylke.no
 
 patches:
   - patch: |-

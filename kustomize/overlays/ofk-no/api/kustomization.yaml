@@ -5,9 +5,10 @@ namespace: ofk-no
 resources:
   - ../../../base
 
-commonLabels:
-  app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_ofk_no
-  fintlabs.no/org-id: ofk.no
+labels:
+  - pairs:
+      app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_ofk_no
+      fintlabs.no/org-id: ofk.no
 
 patches:
   - patch: |-

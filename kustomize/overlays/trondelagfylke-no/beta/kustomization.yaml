@@ -5,9 +5,10 @@ namespace: trondelagfylke-no
 resources:
   - ../../../base
 
-commonLabels:
-  app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_trondelagfylke_no
-  fintlabs.no/org-id: trondelagfylke.no
+labels:
+  - pairs:
+      app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_trondelagfylke_no
+      fintlabs.no/org-id: trondelagfylke.no
 
 patches:
   - patch: |-

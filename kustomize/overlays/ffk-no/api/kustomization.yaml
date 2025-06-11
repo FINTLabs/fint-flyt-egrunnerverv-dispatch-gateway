@@ -5,9 +5,10 @@ namespace: ffk-no
 resources:
   - ../../../base
 
-commonLabels:
-  app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_ffk_no
-  fintlabs.no/org-id: ffk.no
+labels:
+  - pairs:
+      app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_ffk_no
+      fintlabs.no/org-id: ffk.no
 
 patches:
   - patch: |-

@@ -5,9 +5,10 @@ namespace: mrfylke-no
 resources:
   - ../../../base
 
-commonLabels:
-  app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_mrfylke_no
-  fintlabs.no/org-id: mrfylke.no
+labels:
+  - pairs:
+      app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_mrfylke_no
+      fintlabs.no/org-id: mrfylke.no
 
 patches:
   - patch: |-
