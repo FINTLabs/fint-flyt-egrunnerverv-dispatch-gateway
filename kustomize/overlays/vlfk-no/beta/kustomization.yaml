@@ -5,9 +5,10 @@ namespace: vlfk-no
 resources:
   - ../../../base
 
-commonLabels:
-  app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_vlfk_no
-  fintlabs.no/org-id: vlfk.no
+labels:
+  - pairs:
+      app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_vlfk_no
+      fintlabs.no/org-id: vlfk.no
 
 patches:
   - patch: |-

@@ -5,9 +5,10 @@ namespace: telemarkfylke-no
 resources:
   - ../../../base
 
-commonLabels:
-  app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_telemarkfylke_no
-  fintlabs.no/org-id: telemarkfylke.no
+labels:
+  - pairs:
+      app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_telemarkfylke_no
+      fintlabs.no/org-id: telemarkfylke.no
 
 patches:
   - patch: |-

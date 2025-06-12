@@ -15,6 +15,7 @@ spring:
     include:
       - flyt-kafka
       - flyt-postgres
+      - flyt-logging
 
 fint:
   application-id: fint-flyt-egrunnerverv-dispatch-gateway

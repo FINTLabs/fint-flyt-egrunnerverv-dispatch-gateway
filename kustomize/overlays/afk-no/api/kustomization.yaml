@@ -5,9 +5,10 @@ namespace: afk-no
 resources:
   - ../../../base
 
-commonLabels:
-  app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_afk_no
-  fintlabs.no/org-id: afk.no
+labels:
+  - pairs:
+      app.kubernetes.io/instance: fint-flyt-egrunnerverv-dispatch-gateway_afk_no
+      fintlabs.no/org-id: afk.no
 
 patches:
   - patch: |-
@@ -29,4 +30,3 @@ patches:
     target:
       kind: Application
       name: fint-flyt-egrunnerverv-dispatch-gateway
-
