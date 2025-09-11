@@ -42,14 +42,14 @@ dependencies {
     implementation 'io.netty:netty-resolver-dns-native-macos:4.1.82.Final:osx-aarch_64'
 
     implementation 'org.springframework.kafka:spring-kafka'
-    implementation 'no.fintlabs:fint-kafka:4.0.1'
-    implementation 'no.fintlabs:fint-flyt-kafka:3.1.1'
+    implementation 'no.fintlabs:fint-kafka:4.0.3'
+    implementation 'no.fintlabs:fint-flyt-kafka:3.1.2'
     implementation 'org.jetbrains:annotations:23.0.0'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'org.postgresql:postgresql:42.7.7'
 
-    implementation 'no.fintlabs:fint-flyt-cache:1.2.4'
+    implementation 'no.fintlabs:fint-flyt-cache:1.2.5'
 
     implementation 'org.flywaydb:flyway-core'
 
@@ -59,7 +59,7 @@ dependencies {
     implementation("no.fint:fint-arkiv-resource-model-java:${apiVersion}")
     implementation("no.fint:fint-administrasjon-resource-model-java:${apiVersion}")
 
-    implementation 'no.fintlabs:fint-flyt-resource-server:5.1.0'
+    implementation 'no.fintlabs:fint-flyt-resource-server:5.1.1'
 
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
